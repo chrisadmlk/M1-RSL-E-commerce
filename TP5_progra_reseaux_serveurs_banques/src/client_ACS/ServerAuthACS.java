@@ -25,7 +25,7 @@ public class ServerAuthACS extends Thread {
                 System.out.println("************ Serveur AUTH en attente");
                 workSocket = serverSocket.accept();
                 System.out.println(workSocket.getRemoteSocketAddress().toString() + "#accept#thread serveur AUTH");
-                ThreadACS oneThreadConso = new ThreadACS("NameTemp", workSocket, 2);
+                ThreadConsoACS oneThreadConso = new ThreadConsoACS("NameTemp", workSocket, 2);
                 oneThreadConso.start();
             } catch (IOException e) {
                 System.err.println("Erreur d'accept ! ? [" + e.getMessage() + "]");

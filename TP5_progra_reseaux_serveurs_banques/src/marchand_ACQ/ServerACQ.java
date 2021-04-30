@@ -26,7 +26,6 @@ public class ServerACQ extends Thread {
         }
     }
 
-
     public void run() {
         // Mise en attente du serveur
         Socket CSocket = null;

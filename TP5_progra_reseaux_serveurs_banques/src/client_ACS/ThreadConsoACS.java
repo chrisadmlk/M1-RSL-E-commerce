@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 
 import common.BeanAccessOracle;
 
-public class ThreadACS extends Thread {
+public class ThreadConsoACS extends Thread {
     String nom;
     Socket socket;
     DataInputStream dis = null;
@@ -18,7 +18,7 @@ public class ThreadACS extends Thread {
     BeanAccessOracle beanOracle;
     int threadServeurAppelant;
 
-    public ThreadACS(String n, Socket s, int cas) {
+    public ThreadConsoACS(String n, Socket s, int cas) {
         socket = s;
         nom = n;
         threadServeurAppelant = cas;  // 1 = MONEY, 2 = AUTH
@@ -85,8 +85,6 @@ public class ThreadACS extends Thread {
 
         }
 
-        // TODO : mettre en place protocole clair d'arret d'un thread
-
         try {
             dis.close();
             dos.close();
@@ -95,6 +93,10 @@ public class ThreadACS extends Thread {
             throw new RuntimeException("Error closing server", e);
         }
         System.out.println("Thread + " + nom + " Stopped.");
+    }
+
+    private void authenticateClient() {
+
     }
 
 

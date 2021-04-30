@@ -9,7 +9,6 @@ import java.sql.Statement;
 import java.sql.Types;
 
 public class BeanAccessOracle {
-
     Class leDriver;
     Connection con;
     Statement instruc;
@@ -27,12 +26,9 @@ public class BeanAccessOracle {
         instruc = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
     }
 
-
     public ResultSet executeQuery(String s) throws SQLException {
-        ResultSet rs = instruc.executeQuery(s);
-        return rs;
+        return instruc.executeQuery(s);
     }
-
 
     public String executeProcedureChangeStock(int quant, String item_name) throws SQLException {
 
