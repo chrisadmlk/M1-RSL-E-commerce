@@ -1,23 +1,19 @@
 package marchand_ACQ;
 
-import java.sql.SQLException;
-
 public class ThreadACQ extends Thread
 {
 	 private I_SourceTaches tachesAExecuter;
-	 private String nom;
-	  
+	 private String name;
 	 
 	 private Runnable tacheEnCours;
 	 public ThreadACQ(I_SourceTaches st, String n ) {
 		 tachesAExecuter = st;
-		 nom = n;
+		 name = n;
 	 }
 
 	 public void run(){
-		 
+
 		 while (!isInterrupted()) {
-			 
 			 try {
 				 tacheEnCours = tachesAExecuter.getTache();
 			 }
