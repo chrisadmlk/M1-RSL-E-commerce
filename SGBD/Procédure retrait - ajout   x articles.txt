@@ -1,0 +1,43 @@
+SET SERVEROUTPUT ON ;
+/
+
+
+
+CREATE OR REPLACE PROCEDURE ChangeStock(quantity IN INTEGER, item_name IN VARCHAR2, response OUT VARCHAR2)
+IS
+	Requete VARCHAR2(500);
+	quantityInStock Integer;
+	newQuantityInStock Integer;
+
+BEGIN
+	Requete := 'SELECT quantity FROM MERCHANT.Stock WHERE item_name =:1';
+	EXECUTE IMMEDIATE Requete INTO quantityInStock USING item_name;
+
+	IF quantityInStock < quantity
+	THEN 
+		response := 'Pas suffisament de stock !';
+	ELSE 
+		response := 'Opération correctement effectuée';
+		newQuantityInStock := quantityInStock - quantity;
+		Requete := 'UPDATE MERCHANT.Stock SET quantity=:1 WHERE item_name =:2';
+		EXECUTE IMMEDIATE Requete USING newQuantityInStock, item_name;
+	END IF;
+
+COMMIT;
+END;
+/
+
+
+
+
+-- Pour faire tests, tout ok 
+--DECLARE 
+--output1 VARCHAR2(500);
+--output2 VARCHAR2(500);
+--BEGIN
+--ChangeStock(10, 'Bol en bois', output1);
+--ChangeStock(10, 'Bol en or', output2);
+--dbms_output.put_line(output1);
+--dbms_output.put_line(output2);
+--END;
+--/

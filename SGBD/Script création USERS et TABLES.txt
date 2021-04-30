@@ -1,0 +1,108 @@
+DROP USER MERCHANT CASCADE;
+DROP USER ACS CASCADE;
+DROP USER ACQ CASCADE;
+
+
+
+CREATE USER MERCHANT IDENTIFIED BY gendarme;
+grant connect to MERCHANT;
+grant all privileges to MERCHANT;
+
+CREATE USER ACS IDENTIFIED BY gendarme;
+grant connect to ACS;
+grant all privileges to ACS;
+
+CREATE USER ACQ IDENTIFIED BY gendarme;
+grant connect to ACQ;
+grant all privileges to ACQ;
+
+
+
+
+
+CREATE TABLE ACS.Clients(
+    nom_client VARCHAR2(50) NOT NULL,
+    pin VARCHAR2(50) NOT NULL,
+
+    CONSTRAINT pk_login PRIMARY KEY(nom_client)
+);
+
+
+CREATE TABLE ACS.Virements(
+    nom_client VARCHAR2(50) NOT NULL,
+    montant NUMBER NOT NULL,
+
+    CONSTRAINT fk_virements_clients
+    FOREIGN KEY (nom_client)
+    REFERENCES ACS.Clients (nom_client)
+);
+
+
+CREATE TABLE ACS.Virements(
+    nom_client VARCHAR2(50) NOT NULL,
+    montant NUMBER NOT NULL,
+);
+
+
+
+CREATE TABLE MERCHANT.Login(
+    lgn VARCHAR2(50) NOT NULL,
+    pwd VARCHAR2(50) NOT NULL,
+
+    CONSTRAINT pk_login PRIMARY KEY(lgn)
+);
+
+
+
+CREATE TABLE MERCHANT.Stock(
+    item_name VARCHAR2(50) NOT NULL,
+    price NUMBER NOT NULL, 
+    quantity NUMBER NOT NULL,   -- quantity in stock, can be 0
+
+    CONSTRAINT pk_stock PRIMARY KEY(item_name)
+);
+
+
+
+
+
+CREATE TABLE MERCHANT.Commands(
+    client_name VARCHAR2(50) NOT NULL,
+    item_name VARCHAR2(50) NOT NULL,
+    quantity NUMBER NOT NULL,  -- quantity commanded by a specific client
+
+    CONSTRAINT pk_commands PRIMARY KEY(client_name, item_name, quantity),
+
+    CONSTRAINT fk_commands_login
+    FOREIGN KEY (client_name)
+    REFERENCES MERCHANT.Login (lgn),
+
+    CONSTRAINT fk_commands_stock
+    FOREIGN KEY (item_name)
+    REFERENCES MERCHANT.Stock (item_name)
+);
+
+
+
+
+-- POPULATION DES TABLE POUR TESTS
+
+ Insert into MERCHANT.Stock(item_name, price, quantity) values ('Bol en bois', 9.95, 50);
+ Insert into MERCHANT.Stock(item_name, price, quantity) values ('Bol en or', 300, 1);
+ Insert into MERCHANT.Stock(item_name, price, quantity) values ('Bic', 4.50, 16);
+ Insert into MERCHANT.Stock(item_name, price, quantity) values ('Chaise en carton', 3.50, 19);
+ Insert into MERCHANT.Stock(item_name, price, quantity) values ('Coussin', 15.20, 5);
+ Insert into MERCHANT.Stock(item_name, price, quantity) values ('Calculatrice', 119.99, 3);
+
+ Insert into MERCHANT.Login(lgn, pwd) values ('aaa', 'bbb');
+ Insert into MERCHANT.Login(lgn, pwd) values ('user1', 'pwd1');
+ Insert into MERCHANT.Login(lgn, pwd) values ('Cyril', 'azerty');
+
+ Insert into ACS.Clients(nom_client, pin) values ('Cyril', '123');
+ Insert into ACS.Clients(nom_client, pin) values ('Client2', 'azerty');
+ Insert into ACS.Clients(nom_client, pin) values ('Client3', 'superpin');
+
+
+
+
+
