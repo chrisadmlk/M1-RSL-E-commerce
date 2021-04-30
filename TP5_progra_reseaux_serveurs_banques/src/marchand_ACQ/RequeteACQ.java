@@ -11,9 +11,6 @@ import java.sql.ResultSet;
 
 import common.BeanAccessOracle;
 
-
-
-
 public class RequeteACQ implements I_Requete, Serializable {
 	
 	 private int type;
@@ -21,12 +18,13 @@ public class RequeteACQ implements I_Requete, Serializable {
 	 private String chargeUtile;
 	 private Socket socketClient;
 	 
-	 public RequeteACQ(int p, int t, String chu, Socket s) { 
-		 protocoleTag = p; type = t; chargeUtile = chu; socketClient =s; 
+	 public RequeteACQ(int p, int t, String chu, Socket s) {
+		 protocoleTag = p; type = t; chargeUtile = chu; socketClient =s;
 	 }
 	 
-	 public String getChargeUtile() { return chargeUtile; } 
-	 
+	 public String getChargeUtile() {
+	 	return chargeUtile;
+	 }
 	 
 	 public Runnable createRunnable (final Socket s)  { 
 		 return new Runnable() {
@@ -35,10 +33,6 @@ public class RequeteACQ implements I_Requete, Serializable {
 			 }
 		 }; 
 	 }
-	 
-	 
-
-
 		
 	 private void traiteRequete(Socket sock) {
 		 BeanAccessOracle beanOracle;
@@ -49,8 +43,7 @@ public class RequeteACQ implements I_Requete, Serializable {
 	 	 String query="";
 	 	 ResultSet result;
 	 	 String[] token = null;
-	 						
-		 
+
          try {
  			
         	 dis = new DataInputStream(new BufferedInputStream(socketClient.getInputStream()));
@@ -65,23 +58,19 @@ public class RequeteACQ implements I_Requete, Serializable {
          
          
          
-         // décryptage
+         // dï¿½cryptage
          
          
-         // traitement des requêtes en clair
+         // traitement des requï¿½tes en clair
          
          token = s.split(";");
          
          // recryptage
-         
-         
 
       	try{  
       		dos = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
       		dos.write(rep.getBytes()); dos.flush(); }
-     	catch (IOException e) { System.out.println("Erreur d'écriture = " + e.getMessage()); } 
-      	 
-		
+     	catch (IOException e) { System.out.println("Erreur d'ï¿½criture = " + e.getMessage()); }
 	 }
 	 
 }
