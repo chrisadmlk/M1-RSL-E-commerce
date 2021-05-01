@@ -101,6 +101,7 @@ CREATE TABLE MERCHANT.Commands(
  Insert into ACS.Clients(nom_client, pin) values ('Cyril', '123');
  Insert into ACS.Clients(nom_client, pin) values ('Client2', 'azerty');
  Insert into ACS.Clients(nom_client, pin) values ('Client3', 'superpin');
+ Insert into ACS.Clients(nom_client,pin) values ('Bruce Wayne', '2222');
 
 
 
