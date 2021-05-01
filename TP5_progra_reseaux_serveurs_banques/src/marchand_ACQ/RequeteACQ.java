@@ -49,6 +49,7 @@ public class RequeteACQ implements I_Requete, Serializable {
         	 dis = new DataInputStream(new BufferedInputStream(socketClient.getInputStream()));
 			 dos = new DataOutputStream(new BufferedOutputStream(socketClient.getOutputStream()));
 			 beanOracle = new BeanAccessOracle("ACS");
+
 		} catch ( Exception e) { e.printStackTrace();	}
 
          s = s.substring(0, s.length() - 1); 

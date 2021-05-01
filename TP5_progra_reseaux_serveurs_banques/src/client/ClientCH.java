@@ -1,6 +1,5 @@
 package client;
 
-import store.Catalog;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

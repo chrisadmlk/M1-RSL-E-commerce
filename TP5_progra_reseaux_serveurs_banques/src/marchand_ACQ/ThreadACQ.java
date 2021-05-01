@@ -18,7 +18,6 @@ public class ThreadACQ extends Thread
 				 tacheEnCours = tachesAExecuter.getTache();
 			 }
 			 catch (InterruptedException e) { System.out.println("Interruption : " + e.getMessage()); }
-			 
 			 System.out.println("run de tachesencours (ThreadConso)");
 			 tacheEnCours.run();
 		 }

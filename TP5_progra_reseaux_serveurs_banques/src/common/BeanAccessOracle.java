@@ -1,15 +1,8 @@
 package common;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 
 public class BeanAccessOracle {
-
     Class leDriver;
     Connection con;
     Statement instruc;
@@ -21,21 +14,17 @@ public class BeanAccessOracle {
         String url = "jdbc:oracle:thin:@localhost:1521/orcl";
         //String username = "CC";
         String pwd = "gendarme";
-        System.out.println("!!!!!!!!!!!!!! " + url + " " + username + " " + pwd);
+        System.out.println("!/! -Connexion réussie à la db- " + url + " " + username + " " + pwd);
 
         con = DriverManager.getConnection(url, username, pwd);
         instruc = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
     }
 
-
     public ResultSet executeQuery(String s) throws SQLException {
-        ResultSet rs = instruc.executeQuery(s);
-        return rs;
+        return instruc.executeQuery(s);
     }
 
-
     public String executeProcedureChangeStock(int quant, String item_name) throws SQLException {
-
         CallableStatement cs = con.prepareCall("{CALL MERCHANT.ChangeStock(?,?,?)}");
         cs.setInt(1, quant);
         cs.setString(2, item_name);
@@ -46,10 +35,19 @@ public class BeanAccessOracle {
         return rep;
     }
 
+    public String getPIN(String clientName) throws SQLException {
+        PreparedStatement researchPIN = con.prepareStatement("SELECT * FROM ACS.Clients WHERE nom_client = ?");
+        researchPIN.setString(1,clientName);
+        ResultSet result = researchPIN.executeQuery();
+        String pin = "0";
+        if(result.next()){
+            pin = result.getString("pin");
+        }
+        return pin;
+    }
+
     public int executeUpdate(String s) throws SQLException {
         int rs = instruc.executeUpdate(s);
         return rs;
     }
-
-
 }
