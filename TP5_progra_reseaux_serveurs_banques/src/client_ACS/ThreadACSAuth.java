@@ -3,11 +3,13 @@ package client_ACS;
 import common.BeanAccessOracle;
 import common.ObjTransformer;
 import mysecurity.tramap.AsymmetricCryptTool;
+import mysecurity.utils.HashedObject;
 import mysecurity.utils.TransferObject;
 
 import java.io.*;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.util.Arrays;
 
 public class ThreadACSAuth extends Thread {
     private Socket socket;
@@ -39,7 +41,8 @@ public class ThreadACSAuth extends Thread {
                 System.out.println("*AUTH* -> " + currentThread().getName() + " - Type de requete : " + request);
                 switch (request) {
                     case "SECURE": {
-                        // Simulate certificates
+                        // Simulate certificates (need to be replaced with real ones
+                        // Atleast for the bank server
                         clientKeys = new AsymmetricCryptTool();
                         clientKeys.createKeyPair();
                         // Sending public key
@@ -53,18 +56,32 @@ public class ThreadACSAuth extends Thread {
                     case "AUTH": {
                         // Authenticate client
                         AuthClientRequest authClientRequest = (AuthClientRequest) reader.readObject();
+                        String name = authClientRequest.getName();
+                        String dateRequest = authClientRequest.getDateRequest();
 
-                        // Requires testing for hash
-                        authClientRequest.createDigest("Call database for pin..");
-
-                        // Verify signature + digest
-                        String stringSignature = authClientRequest.getName() + authClientRequest.getDateRequest();
-                        byte[] verifySignature = stringSignature.getBytes() + authClientRequest.getDigest();
-                        if(!serverACQKeyHandler.verifyAuthentication()){
-
+                        // Verify signature
+                        String stringSignature =
+                                name +
+                                dateRequest +
+                                Arrays.toString(authClientRequest.getDigest().getBytes()
+                        );
+                        if(!serverACQKeyHandler.verifyAuthentication(stringSignature.getBytes(), authClientRequest.getSignature())){
+                            System.out.println("Signature incorrecte");
+                            break;
                         }
 
-                        // Send response
+                        // Verify digest with PIN
+                        String pin = "Call to database for pin";
+                        HashedObject received = new HashedObject(
+                                ObjTransformer.ObjToByteArray(name + dateRequest + pin),
+                                "SHA1"
+                        );
+                        if(!authClientRequest.getDigest().verifyHash(received.getBytes())){
+                            System.out.println("Hash + pin incorrect -- Authentification impossible");
+                            break;
+                        }
+
+                        // Send response if digest is OK
                         String bankName = "Gotham National Bank";
                         int serial = (int) Math.random();
                         String concat = bankName + authClientRequest.getName() + serial;

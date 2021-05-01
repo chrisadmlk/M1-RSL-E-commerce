@@ -11,7 +11,7 @@ import java.util.Date;
 public class AuthClientRequest implements Serializable {
     private String name;
     private String dateRequest;
-    private byte[] digest;
+    private HashedObject digest;
     private byte[] signature;
 
     public AuthClientRequest() {}
@@ -30,12 +30,11 @@ public class AuthClientRequest implements Serializable {
         return format.format(new Date(System.currentTimeMillis()));
     }
 
-    public byte[] createDigest(String pin) {
-        HashedObject hashSHA1 = new HashedObject(
+    public HashedObject createDigest(String pin) {
+        return new HashedObject(
                 ObjTransformer.ObjToByteArray(name + dateRequest + pin),
                 "SHA1"
         );
-        return hashSHA1.getBytes();
     }
 
 
@@ -56,11 +55,11 @@ public class AuthClientRequest implements Serializable {
         this.dateRequest = dateRequest;
     }
 
-    public byte[] getDigest() {
+    public HashedObject getDigest() {
         return digest;
     }
 
-    public void setDigest(byte[] digest) {
+    public void setDigest(HashedObject digest) {
         this.digest = digest;
     }
 
