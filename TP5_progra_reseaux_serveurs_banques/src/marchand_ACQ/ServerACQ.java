@@ -16,9 +16,7 @@ public class ServerACQ extends Thread {
 
 
     public ServerACQ(I_SourceTaches st) {
-
         tachesAExecuter = st;
-
         // Démarrage du pool de threads
         for (int i = 0; i < NB_MAX_THEADCONSO; i++) {
             ThreadACQ thr = new ThreadACQ(tachesAExecuter, "Thread du pool n°" + String.valueOf(i));
