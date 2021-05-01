@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class PropertiesLoader {
-    public static Properties propertyloader(String filename) throws IOException {
+    public static Properties propertiesLoader(String filename) throws IOException {
         Properties properties = new Properties();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream fileProperties = classLoader.getResourceAsStream(filename);

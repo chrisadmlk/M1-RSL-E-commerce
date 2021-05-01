@@ -31,7 +31,7 @@ public class ServerStore implements ServerThreadPool {
     }
 
     private void loadProperties() throws IOException {
-        Properties properties = PropertiesLoader.propertyloader(FILE_PROPERTIES);
+        Properties properties = PropertiesLoader.propertiesLoader(FILE_PROPERTIES);
         port = Integer.parseInt(properties.getProperty(PROPERTY_PORT));
         MAX_THREADS = Integer.parseInt(properties.getProperty(PROPERTY_MAX_THREADS));
     }

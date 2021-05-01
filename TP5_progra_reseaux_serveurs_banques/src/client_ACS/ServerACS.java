@@ -2,13 +2,15 @@ package client_ACS;
 
 import common.PropertiesLoader;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 
 public class ServerACS {
-    private static final String FILE_PROPERTIES = "serverACS.properties";
+    private static final String FILE_PROPERTIES = "src/client_ACS/serverACS.properties";
     private static final String PROPERTY_PORT_MONEY = "PORT_MONEY";
     private static final String PROPERTY_PORT_AUTH = "PORT_AUTH";
 
@@ -22,7 +24,7 @@ public class ServerACS {
 
     public ServerACS() {
         try {
-            loadProperties();
+//            loadProperties();
             serverMoneySocket = new ServerSocket(portMoney);
             serverAuthSocket = new ServerSocket(portAuth);
         } catch (IOException e) {
@@ -31,53 +33,64 @@ public class ServerACS {
     }
 
     public void startServer() {
-        Thread thread = new Thread(new Runnable() {
+        System.out.println("Démarrage ACS");
+        Thread thSocketHandlerMoney = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isRunning) {
-                    Thread thSocketHandlerMoney = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Socket workMoneySocket = serverMoneySocket.accept();
-                                new Thread(new ThreadACSMoney(workMoneySocket)).start();
-                                System.out.println("*-> Connexion d'un client reçu sur le port Money\n*-> En attente du login");
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    Thread thSocketHandlerAuth = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Socket workAuthSocket = serverAuthSocket.accept();
-                                new Thread(new ThreadACSAuth(workAuthSocket)).start();
-                                System.out.println("*-> Connexion d'un client reçu sur le port Auth\n*-> En attente du login");
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    thSocketHandlerAuth.start();
-                    thSocketHandlerMoney.start();
+                    try {
+                        Socket workMoneySocket = serverMoneySocket.accept();
+                        ThreadACSMoney thMoney = new ThreadACSMoney(workMoneySocket);
+                        thMoney.start();
+                        System.out.println("*-> Connexion d'un client reçu sur le port Money\n*-> En attente du login");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 // Server stopped
                 try {
                     serverMoneySocket.close();
-                    serverAuthSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    serverAuthSocket = null;
                     serverMoneySocket = null;
                 }
             }
         });
-        thread.start();
+        Thread thSocketHandlerAuth = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isRunning) {
+                    try {
+                        Socket workAuthSocket = serverAuthSocket.accept();
+                        ThreadACSAuth thAuth = new ThreadACSAuth(workAuthSocket);
+                        thAuth.start();
+                        System.out.println("*-> Connexion d'un client reçu sur le port Auth\n*-> En attente du login");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                // Server stopped
+                try {
+                    serverAuthSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    serverAuthSocket = null;
+                }
+            }
+        });
+        thSocketHandlerAuth.start();
+        thSocketHandlerMoney.start();
     }
 
+
     private void loadProperties() throws IOException {
-        Properties properties = PropertiesLoader.propertyloader(FILE_PROPERTIES);
+        Properties properties = new Properties();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream fileProperties = classLoader.getResourceAsStream(FILE_PROPERTIES);
+        if (fileProperties == null) {
+            throw new FileNotFoundException("Erreur ouverture du fichier properties");
+        }
+        properties.load(fileProperties);
         portMoney = Integer.parseInt(properties.getProperty(PROPERTY_PORT_MONEY));
         portAuth = Integer.parseInt(properties.getProperty(PROPERTY_PORT_AUTH));
     }

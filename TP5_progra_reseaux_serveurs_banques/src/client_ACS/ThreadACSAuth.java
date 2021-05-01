@@ -25,7 +25,7 @@ public class ThreadACSAuth extends Thread {
         try {
             reader = new ObjectInputStream(socket.getInputStream());
             writer = new ObjectOutputStream(socket.getOutputStream());
-            beanOracle = new BeanAccessOracle("ACS");
+//            beanOracle = new BeanAccessOracle("ACS");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,23 +60,19 @@ public class ThreadACSAuth extends Thread {
                         String dateRequest = authClientRequest.getDateRequest();
 
                         // Verify signature
-                        String stringSignature =
-                                name +
-                                dateRequest +
-                                Arrays.toString(authClientRequest.getDigest().getBytes()
-                        );
-                        if(!serverACQKeyHandler.verifyAuthentication(stringSignature.getBytes(), authClientRequest.getSignature())){
+                        AuthClientRequest copyToVerify = new AuthClientRequest();
+                        copyToVerify.setName(authClientRequest.getName());
+                        copyToVerify.setDateRequest(authClientRequest.getDateRequest());
+                        copyToVerify.setDigest(authClientRequest.getDigest());
+                        if(!serverACQKeyHandler.verifyAuthentication(copyToVerify.gatherInfos(), authClientRequest.getSignature())){
                             System.out.println("Signature incorrecte");
                             break;
                         }
 
                         // Verify digest with PIN
-                        String pin = "Call to database for pin";
-                        HashedObject received = new HashedObject(
-                                ObjTransformer.ObjToByteArray(name + dateRequest + pin),
-                                "SHA1"
-                        );
-                        if(!authClientRequest.getDigest().verifyHash(received.getBytes())){
+                        String pin = "2222"; // Call to database for pin
+
+                        if(!authClientRequest.getDigest().verifyHash(ObjTransformer.ObjToByteArray(name + dateRequest + pin))){
                             System.out.println("Hash + pin incorrect -- Authentification impossible");
                             break;
                         }
@@ -95,6 +91,7 @@ public class ThreadACSAuth extends Thread {
                         writer.writeObject(authServerResponse); writer.flush();
                         break;
                     }
+
                     default: {
                         System.out.println("loop");
                         break;

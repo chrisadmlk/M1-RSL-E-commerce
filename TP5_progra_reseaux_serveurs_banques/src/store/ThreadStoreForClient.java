@@ -1,7 +1,5 @@
 package store;
 
-import utils.jdbc.dao.DAOFactory;
-import utils.jdbc.dao.ItemDao;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,8 +27,6 @@ public class ThreadStoreForClient extends Thread {
     @Override
     public void run() {
         System.out.println("*-> Lancement du ThreadClient n° : " + Thread.currentThread().getName());
-        DAOFactory daoFactory = DAOFactory.getInstance(URL);
-        ItemDao itemDao = daoFactory.getItemDao();
         boolean logged = false;
         while (isRunning()) {
             synchronized (taskQueue) {

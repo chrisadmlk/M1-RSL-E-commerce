@@ -21,7 +21,7 @@ public class ThreadACSMoney extends Thread{
         try {
             reader = new ObjectInputStream(socket.getInputStream());
             writer = new ObjectOutputStream(socket.getOutputStream());
-            beanOracle = new BeanAccessOracle("ACS");
+//            beanOracle = new BeanAccessOracle("ACS");
         } catch (Exception e) {
             e.printStackTrace();
         }

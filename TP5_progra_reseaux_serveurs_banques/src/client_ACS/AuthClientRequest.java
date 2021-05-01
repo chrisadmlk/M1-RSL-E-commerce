@@ -3,9 +3,12 @@ package client_ACS;
 import common.ObjTransformer;
 import mysecurity.utils.HashedObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.*;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 public class AuthClientRequest implements Serializable {
@@ -37,7 +40,23 @@ public class AuthClientRequest implements Serializable {
         );
     }
 
+    public byte[] gatherInfos() throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(getName().getBytes());
+        output.write(getDateRequest().getBytes());
+        output.write(getDigest().getBytes());
+        return output.toByteArray();
+    }
 
+    @Override
+    public String toString() {
+        return "AuthClientRequest{" +
+                "name='" + name + '\'' +
+                ", dateRequest='" + dateRequest + '\'' +
+                ", digest=" + new String(digest.getBytes()) +
+                ", signature=" + new String(signature) +
+                '}';
+    }
 
     public String getName() {
         return name;
