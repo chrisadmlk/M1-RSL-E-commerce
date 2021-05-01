@@ -1,9 +1,8 @@
 package test;
 
-import client_ACS.AuthClientRequest;
-import client_ACS.AuthServerResponse;
+import client_ACS.obj.AuthClientRequest;
+import client_ACS.obj.AuthServerResponse;
 import client_ACS.ServerACS;
-import marchand_ACQ.ServerACQ;
 import mysecurity.tramap.AsymmetricCryptTool;
 
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class TestAuthentication {

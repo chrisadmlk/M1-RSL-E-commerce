@@ -1,6 +1,7 @@
-package client_ACS;
+package client_ACS.obj;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class AuthServerResponse implements Serializable {
     private String bankName;
@@ -13,6 +14,16 @@ public class AuthServerResponse implements Serializable {
         this.clientName = clientName;
         this.serialNumber = serialNumber;
         this.signature = signature;
+    }
+
+    @Override
+    public String toString() {
+        return "AuthServerResponse{" +
+                "bankName='" + bankName + '\'' +
+                ", clientName='" + clientName + '\'' +
+                ", serialNumber=" + serialNumber +
+                ", signature=" + new String(signature) +
+                '}';
     }
 }
 

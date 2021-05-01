@@ -1,15 +1,14 @@
 package client_ACS;
 
+import client_ACS.obj.AuthClientRequest;
+import client_ACS.obj.AuthServerResponse;
 import common.BeanAccessOracle;
 import common.ObjTransformer;
 import mysecurity.tramap.AsymmetricCryptTool;
-import mysecurity.utils.HashedObject;
-import mysecurity.utils.TransferObject;
 
 import java.io.*;
 import java.net.Socket;
 import java.security.PublicKey;
-import java.util.Arrays;
 
 public class ThreadACSAuth extends Thread {
     private Socket socket;
@@ -79,7 +78,7 @@ public class ThreadACSAuth extends Thread {
 
                         // Send response if digest is OK
                         String bankName = "Gotham National Bank";
-                        int serial = (int) Math.random();
+                        int serial = (int) (Math.random() * 420) + 5;
                         String concat = bankName + authClientRequest.getName() + serial;
 
                         AuthServerResponse authServerResponse = new AuthServerResponse(

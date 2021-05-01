@@ -1,4 +1,4 @@
-package client_ACS;
+package client_ACS.obj;
 
 import common.ObjTransformer;
 import mysecurity.utils.HashedObject;
