@@ -9,6 +9,7 @@ import mysecurity.tramap.AsymmetricCryptTool;
 import java.io.*;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.sql.SQLException;
 
 public class ThreadACSAuth extends Thread {
     private Socket socket;
@@ -24,7 +25,7 @@ public class ThreadACSAuth extends Thread {
         try {
             reader = new ObjectInputStream(socket.getInputStream());
             writer = new ObjectOutputStream(socket.getOutputStream());
-//            beanOracle = new BeanAccessOracle("ACS");
+            beanOracle = new BeanAccessOracle("ACS");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,8 +70,7 @@ public class ThreadACSAuth extends Thread {
                         }
 
                         // Verify digest with PIN
-                        String pin = "2222"; // Call to database for pin
-
+                        String pin = beanOracle.getPIN(name);
                         if(!authClientRequest.getDigest().verifyHash(ObjTransformer.ObjToByteArray(name + dateRequest + pin))){
                             System.out.println("Hash + pin incorrect -- Authentification impossible");
                             break;
@@ -96,7 +96,7 @@ public class ThreadACSAuth extends Thread {
                         break;
                     }
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException | SQLException e) {
                 e.printStackTrace();
             }
         }
