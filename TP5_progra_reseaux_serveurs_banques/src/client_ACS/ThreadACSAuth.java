@@ -17,15 +17,16 @@ public class ThreadACSAuth extends Thread {
     private ObjectOutputStream writer = null;
     private BeanAccessOracle beanOracle;
 
+    private AsymmetricCryptTool serverACQKeys;
     private AsymmetricCryptTool clientKeys;
-    private AsymmetricCryptTool serverACQKeyHandler;
 
-    public ThreadACSAuth(Socket workSocket) {
+    public ThreadACSAuth(Socket workSocket, AsymmetricCryptTool serverKeys) {
         this.socket = workSocket;
         try {
             reader = new ObjectInputStream(socket.getInputStream());
             writer = new ObjectOutputStream(socket.getOutputStream());
             beanOracle = new BeanAccessOracle("ACS");
+            serverACQKeys = serverKeys;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -41,16 +42,14 @@ public class ThreadACSAuth extends Thread {
                 System.out.println("*AUTH* -> " + currentThread().getName() + " - Type de requete : " + request);
                 switch (request) {
                     case "SECURE": {
-                        // Simulate certificates (need to be replaced with real ones
-                        // Atleast for the bank server
-                        clientKeys = new AsymmetricCryptTool();
-                        clientKeys.createKeyPair();
+                        // Certificate is simulated with a KeyPair
+
                         // Sending public key
-                        writer.writeObject(clientKeys.getPublicKey());
+                        writer.writeObject(serverACQKeys.getPublicKey());
                         writer.flush();
                         // Receive ACQ public key
-                        serverACQKeyHandler = new AsymmetricCryptTool();
-                        serverACQKeyHandler.setPublicKey((PublicKey) reader.readObject());
+                        clientKeys = new AsymmetricCryptTool();
+                        clientKeys.setPublicKey((PublicKey) reader.readObject());
                         break;
                     }
                     case "AUTH": {
@@ -64,7 +63,7 @@ public class ThreadACSAuth extends Thread {
                         copyToVerify.setName(authClientRequest.getName());
                         copyToVerify.setDateRequest(authClientRequest.getDateRequest());
                         copyToVerify.setDigest(authClientRequest.getDigest());
-                        if(!serverACQKeyHandler.verifyAuthentication(copyToVerify.gatherInfos(), authClientRequest.getSignature())){
+                        if(!clientKeys.verifyAuthentication(copyToVerify.gatherInfos(), authClientRequest.getSignature())){
                             System.out.println("Signature incorrecte");
                             break;
                         }
@@ -85,7 +84,7 @@ public class ThreadACSAuth extends Thread {
                                 bankName,
                                 authClientRequest.getName(),
                                 serial,
-                                clientKeys.authenticate(concat.getBytes())
+                                serverACQKeys.authenticate(concat.getBytes())
                         );
                         writer.writeObject(authServerResponse); writer.flush();
                         break;

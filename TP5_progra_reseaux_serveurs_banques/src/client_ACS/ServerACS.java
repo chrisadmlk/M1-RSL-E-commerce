@@ -1,6 +1,7 @@
 package client_ACS;
 
 import common.PropertiesLoader;
+import mysecurity.tramap.AsymmetricCryptTool;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -62,7 +63,9 @@ public class ServerACS {
                 while (isRunning) {
                     try {
                         Socket workAuthSocket = serverAuthSocket.accept();
-                        ThreadACSAuth thAuth = new ThreadACSAuth(workAuthSocket);
+                        AsymmetricCryptTool serverACQKeys = new AsymmetricCryptTool();
+                        serverACQKeys.createKeyPair();
+                        ThreadACSAuth thAuth = new ThreadACSAuth(workAuthSocket,serverACQKeys);
                         thAuth.start();
                         System.out.println("*-> Connexion d'un client reçu sur le port Auth\n*-> En attente du login");
                     } catch (IOException e) {
