@@ -2,11 +2,15 @@ package client_ACS;
 
 import mysecurity.encryption.AsymmetricCryptTool;
 
+import javax.net.ssl.*;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.Properties;
 
 public class ServerACS {
@@ -19,15 +23,41 @@ public class ServerACS {
     private int portAuth = 51002;
 
     private ServerSocket serverAuthSocket = null;
-    private ServerSocket serverMoneySocket = null;
+    private SSLServerSocket serverMoneySocket = null;
+
     private boolean isRunning = true;
 
     public ServerACS() {
         try {
 //            loadProperties();
-            serverMoneySocket = new ServerSocket(portMoney);
+            // Simple Socket for Auth
             serverAuthSocket = new ServerSocket(portAuth);
-        } catch (IOException e) {
+            // SSL for Money
+            // Keystore
+            KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
+            String FILE_KEYSTORE = "serverAcs_keystore";
+            char[] passwd = "pwdpwd".toCharArray();
+            FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
+            serverACSKeyStore.load(serverInput,passwd);
+            // Context
+            SSLContext sslContext = SSLContext.getInstance("SSLv3");
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(serverACSKeyStore,passwd);
+            TrustManagerFactory trustFactory = TrustManagerFactory.getInstance("SunX509");
+            trustFactory.init(serverACSKeyStore);
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustFactory.getTrustManagers(), null);
+            // Factory
+            SSLServerSocketFactory sslSocketFactory = sslContext.getServerSocketFactory();
+            // Socket
+            serverMoneySocket = (SSLServerSocket) sslSocketFactory.createServerSocket(51001);
+
+
+        } catch (IOException
+                | KeyStoreException
+                | CertificateException
+                | UnrecoverableKeyException
+                | NoSuchAlgorithmException
+                | KeyManagementException e) {
             e.printStackTrace();
         }
     }
@@ -36,14 +66,14 @@ public class ServerACS {
         System.out.println("Démarrage ACS");
 
         AsymmetricCryptTool serverACQKeys = new AsymmetricCryptTool();
-        serverACQKeys.loadFromKeystore("ecom.keystore","pwdpwd","acskeys");
+        serverACQKeys.loadFromKeystore("serverAcs_keystore","pwdpwd","acskeys");
 
         Thread thSocketHandlerMoney = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isRunning) {
                     try {
-                        Socket workMoneySocket = serverMoneySocket.accept();
+                        SSLSocket workMoneySocket = (SSLSocket) serverMoneySocket.accept();
                         ThreadACSMoney thMoney = new ThreadACSMoney(workMoneySocket,serverACQKeys);
                         thMoney.start();
                         System.out.println("*-> Connexion d'un client reçu sur le port Money\n*-> En attente du login");

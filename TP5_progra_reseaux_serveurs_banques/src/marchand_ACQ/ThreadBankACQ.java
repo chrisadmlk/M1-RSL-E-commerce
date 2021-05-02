@@ -1,22 +1,16 @@
 package marchand_ACQ;
 
 import marchand_ACQ.obj.DebitRequest;
-import mysecurity.certificate.CertificateHandler;
-import mysecurity.encryption.AlgorithmParam;
 import mysecurity.encryption.AsymmetricCryptTool;
-import mysecurity.utils.HashedObject;
-import mysecurity.utils.SSLHello;
-import mysecurity.utils.TransferObject;
 
-import javax.crypto.KeyGenerator;
-import java.io.ByteArrayOutputStream;
+import javax.net.ssl.*;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.LinkedList;
 
 public class ThreadBankACQ extends Thread {
@@ -40,11 +34,9 @@ public class ThreadBankACQ extends Thread {
     public void run() {
         System.out.println("*-> Lancement du ThreadBank n° : " + Thread.currentThread().getName());
 
-        bankKeys = new AsymmetricCryptTool();
-        bankKeys.loadFromKeystore("ecom.keystore","pwdpwd","picsoukeys");
 
         while (isRunning()) {
-            synchronized (taskQueue) {
+            synchronized(taskQueue) {
                 if (!taskQueue.isEmpty()) {
                     socket = taskQueue.removeFirst();
                     // Buffers
@@ -64,101 +56,82 @@ public class ThreadBankACQ extends Thread {
                     String request = reader.readUTF();
                     System.out.println("*-> " + currentThread().getName() + " - Type de requete : " + request);
 
-                    switch (request) {
-                        case "REQPAY": {
-                            // receive debit request
-                            DebitRequest debitRequest = (DebitRequest) reader.readObject();
-                            // Signature ok => Process with payment and contact ACS
-                            if(sslDebitAsk(debitRequest)){
-                                writer.writeUTF("OK");
-                            }
-                            else{
-                                writer.writeUTF("NOT OK");
-                            }
-                            writer.flush();
-
-                            break;
+                    if ("REQPAY".equals(request)) {// receive debit request
+                        DebitRequest debitRequest = (DebitRequest) reader.readObject();
+                        // Signature ok => Process with payment and contact ACS
+                        if (sslDebitAsk(debitRequest)) {
+                            writer.writeUTF("OK");
+                        } else {
+                            writer.writeUTF("CANCEL");
                         }
-
-                        default: {
-                            break;
-                        }
-
+                        writer.flush();
                     }
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (NoSuchProviderException e) {
-                    e.printStackTrace();
-                } catch (InvalidAlgorithmParameterException e) {
+                } catch (IOException
+                        | ClassNotFoundException
+                        | NoSuchAlgorithmException
+                        | NoSuchProviderException
+                        | InvalidAlgorithmParameterException e) {
                     e.printStackTrace();
                 }
             }
         }
-
     }
 
     private boolean sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException, NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         // Act as a client towards ACS
-        Socket paySocket = new Socket(hostACS,portACSMoney);
-        System.out.println("#ACQ - Débit request# -> Client se connecte : " + paySocket.getInetAddress().toString());
 
-        ObjectOutputStream payWriter = new ObjectOutputStream(paySocket.getOutputStream());
-        ObjectInputStream payReader = new ObjectInputStream(paySocket.getInputStream());
+        SSLSocket paySocket = null;
+        ObjectOutputStream payWriter = null;
+        ObjectInputStream payReader = null;
+        boolean isSuccessful = false;
 
-        // Send MONEY request
-        payWriter.writeUTF("MONEY"); payWriter.flush();
+        try {
+            // Keystore
+            KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
+            String FILE_KEYSTORE = "serverAcq_keystore";
+            char[] passwd = "pwdpwd".toCharArray();
+            FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
+            serverACSKeyStore.load(serverInput, passwd);
+            // Context
+            SSLContext sslContext = SSLContext.getInstance("SSLv3");
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(serverACSKeyStore, passwd);
+            TrustManagerFactory trustFactory = TrustManagerFactory.getInstance("SunX509");
+            trustFactory.init(serverACSKeyStore);
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustFactory.getTrustManagers(), null);
+            // Factory
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            // Socket
+            paySocket = (SSLSocket) sslSocketFactory.createSocket(hostACS, portACSMoney);
 
-        // --- SSL Handshake
-        // send client Hello
-        SSLHello clientHello = new SSLHello(SSLHello.CLIENT);
-        payWriter.writeObject(clientHello); payWriter.flush();
+            payWriter = new ObjectOutputStream(paySocket.getOutputStream());
+            payReader = new ObjectInputStream(paySocket.getInputStream());
 
-        // receive server hello and certificate
-        SSLHello servHello = (SSLHello) payReader.readObject();
-        CertificateHandler servCertif = (CertificateHandler) payReader.readObject();
+            // Send MONEY request
+            payWriter.writeUTF("MONEY");
+            payWriter.flush();
+            payWriter.writeObject(debitRequest);
+            payWriter.flush();
 
-        if(servCertif.checkSignature() && servCertif.checkValidity()) {
-            System.out.println("Certificat invalide !!");
+            String response = payReader.readUTF();
+            if (response.equals("SUCCESS")) {
+                isSuccessful = true;
+            }
+            // Close everything
+            payWriter.close();
+            payReader.close();
+            paySocket.close();
+        } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | KeyManagementException e) {
+            e.printStackTrace();
         }
-
-        AsymmetricCryptTool serverCrypt = new AsymmetricCryptTool();
-        serverCrypt.setPublicKey(serverCrypt.getPublicKey());
-
-        // Check signature of DebitRequest
-        byte[] toVerify = debitRequest.getAuthServer().concatForSignature();
-        if(!serverCrypt.verifyAuthentication(toVerify,debitRequest.getAuthServer().getSignature())){
-            System.out.println("Signature incorrecte -- Client avec mauvaise banque ?");
-        }
-
-        // Classic SSL : Generate pre master and encrypt it with Server Pk
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        output.write(clientHello.getRnd_cli());
-        output.write(servHello.getRnd_serv());
-        output.write(servHello.getSessionId());
-        byte[] toHash = output.toByteArray();
-        HashedObject hashed = new HashedObject(toHash, "SHA-256");
-        TransferObject preMaster = new TransferObject(serverCrypt.encrypt(hashed.getBytes()));
-        payWriter.writeObject(preMaster); payWriter.flush();
-
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES","BC");
-        keyGenerator.init(new AlgorithmParam(hashed.getBytes()));
-        keyGenerator.generateKey();
-
-        return true;
+        return isSuccessful;
     }
-
 
     private void closeConnexion() throws IOException {
         writer = null;
         reader = null;
         System.out.println("*-> Client déconnecté, on ferme la socket..");
         socket.close();
-    }
-
-    public AsymmetricCryptTool getCertificateBank(){
-        return new AsymmetricCryptTool();
     }
 
     public boolean isRunning() {
