@@ -77,7 +77,7 @@ public class ThreadBankACQ extends Thread {
         }
     }
 
-    private boolean sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException, NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    public boolean sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException, NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         // Act as a client towards ACS
 
         SSLSocket paySocket = null;
