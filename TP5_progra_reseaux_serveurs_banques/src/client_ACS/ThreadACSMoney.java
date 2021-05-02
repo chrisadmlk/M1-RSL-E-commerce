@@ -49,7 +49,8 @@ public class ThreadACSMoney extends Thread {
                         System.out.println("*MONEY* -> didn't authorize this request : " + debitRequest);
                         writer.writeUTF("CANCEL");
                         writer.flush();
-                    } else {
+                    }
+                    else {
                         // Requête à la DB
                         String clientName = debitRequest.getAuthServer().getClientName();
                         ResultSet resultSet = beanOracle.executeQuery("SELECT solde FROM ACS.Clients WHERE nom_client = " + clientName);
