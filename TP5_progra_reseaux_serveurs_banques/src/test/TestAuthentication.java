@@ -3,7 +3,7 @@ package test;
 import client_ACS.obj.AuthClientRequest;
 import client_ACS.obj.AuthServerResponse;
 import client_ACS.ServerACS;
-import mysecurity.tramap.AsymmetricCryptTool;
+import mysecurity.encryption.AsymmetricCryptTool;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

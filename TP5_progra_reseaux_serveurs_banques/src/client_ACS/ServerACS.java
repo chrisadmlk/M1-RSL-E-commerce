@@ -1,7 +1,6 @@
 package client_ACS;
 
-import common.PropertiesLoader;
-import mysecurity.tramap.AsymmetricCryptTool;
+import mysecurity.encryption.AsymmetricCryptTool;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,13 +34,17 @@ public class ServerACS {
 
     public void startServer() {
         System.out.println("Démarrage ACS");
+
+        AsymmetricCryptTool serverACQKeys = new AsymmetricCryptTool();
+        serverACQKeys.loadFromKeystore("ecom.keystore","pwdpwd","acskeys");
+
         Thread thSocketHandlerMoney = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isRunning) {
                     try {
                         Socket workMoneySocket = serverMoneySocket.accept();
-                        ThreadACSMoney thMoney = new ThreadACSMoney(workMoneySocket);
+                        ThreadACSMoney thMoney = new ThreadACSMoney(workMoneySocket,serverACQKeys);
                         thMoney.start();
                         System.out.println("*-> Connexion d'un client reçu sur le port Money\n*-> En attente du login");
                     } catch (IOException e) {
@@ -63,8 +66,6 @@ public class ServerACS {
                 while (isRunning) {
                     try {
                         Socket workAuthSocket = serverAuthSocket.accept();
-                        AsymmetricCryptTool serverACQKeys = new AsymmetricCryptTool();
-                        serverACQKeys.createKeyPair();
                         ThreadACSAuth thAuth = new ThreadACSAuth(workAuthSocket,serverACQKeys);
                         thAuth.start();
                         System.out.println("*-> Connexion d'un client reçu sur le port Auth\n*-> En attente du login");
