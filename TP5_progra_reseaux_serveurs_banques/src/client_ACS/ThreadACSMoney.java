@@ -4,11 +4,16 @@ import common.BeanAccessOracle;
 import mysecurity.certificate.CertificateHandler;
 import mysecurity.encryption.AsymmetricCryptTool;
 import mysecurity.utils.SSLHello;
+import mysecurity.utils.TransferObject;
 
+import javax.crypto.KeyGenerator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 
 public class ThreadACSMoney extends Thread{
     private Socket socket;
@@ -39,8 +44,6 @@ public class ThreadACSMoney extends Thread{
                 String request = reader.readUTF();
                 System.out.println("*MONEY* -> " + currentThread().getName() + " - Type de requete : " + request);
                 if(request.equals("MONEY")){
-                    // Gestion du payment
-
                     // --- SSL Handshake
                     // receive client Hello
                     SSLHello clientHello = (SSLHello) reader.readObject();
@@ -52,9 +55,17 @@ public class ThreadACSMoney extends Thread{
                     // Send certificate
                     CertificateHandler certificate = new CertificateHandler(acsKeys.getCertificate());
                     writer.writeObject(certificate); writer.flush();
+
+                    // Receive premaster
+                    TransferObject preMaster = (TransferObject) reader.readObject();
+
+                    KeyGenerator keyGenerator = KeyGenerator.getInstance("DES","BC");
+                    keyGenerator.init();
+                    keyGenerator.generateKey();
+
                 }
 
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchProviderException e) {
                 e.printStackTrace();
             }
         }

@@ -21,10 +21,12 @@ public class SSLHello implements Serializable {
         if(type == CLIENT){
             this.rnd_cli = generate(28);
             this.rnd_serv = null;
+            sessionId = 0;
         }
         else if(type == SERVER){
             this.rnd_cli = null;
             this.rnd_serv = generate(28);
+            sessionId = (int) (Math.random() * 100);
         }
         this.date = CurrentDate.get();
     }
@@ -36,26 +38,20 @@ public class SSLHello implements Serializable {
         return bytes;
     }
 
-    public static void main(String[] args) {
-        SSLHello hello = new SSLHello();
-
-    }
-
-
-    public int getRnd_serv() {
-        return rnd_serv;
-    }
-
-    public void setRnd_serv(int rnd_serv) {
-        this.rnd_serv = rnd_serv;
-    }
-
-    public int getRnd_cli() {
+    public byte[] getRnd_cli() {
         return rnd_cli;
     }
 
-    public void setRnd_cli(int rnd_cli) {
+    public void setRnd_cli(byte[] rnd_cli) {
         this.rnd_cli = rnd_cli;
+    }
+
+    public byte[] getRnd_serv() {
+        return rnd_serv;
+    }
+
+    public void setRnd_serv(byte[] rnd_serv) {
+        this.rnd_serv = rnd_serv;
     }
 
     public String getDate() {

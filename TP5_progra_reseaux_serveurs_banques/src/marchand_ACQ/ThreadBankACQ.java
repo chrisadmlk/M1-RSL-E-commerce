@@ -3,23 +3,29 @@ package marchand_ACQ;
 import marchand_ACQ.obj.DebitRequest;
 import mysecurity.certificate.CertificateHandler;
 import mysecurity.encryption.AsymmetricCryptTool;
+import mysecurity.utils.HashedObject;
 import mysecurity.utils.SSLHello;
+import mysecurity.utils.TransferObject;
 
+import javax.crypto.KeyGenerator;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.util.LinkedList;
 
 public class ThreadBankACQ extends Thread {
     private Socket socket;
     private LinkedList<Socket> taskQueue;
 
-
     private ObjectInputStream reader = null;
     private ObjectOutputStream writer = null;
 
-    private AsymmetricCryptTool gothamBankCertificate;
+    private AsymmetricCryptTool bankKeys;
 
     private boolean running = true;
     private final int portACSMoney = 51001;
@@ -33,8 +39,8 @@ public class ThreadBankACQ extends Thread {
     public void run() {
         System.out.println("*-> Lancement du ThreadBank n° : " + Thread.currentThread().getName());
 
-        gothamBankCertificate = new AsymmetricCryptTool();
-        gothamBankCertificate.loadFromKeystore("ecom.keystore","pwdpwd","acscert");
+        bankKeys = new AsymmetricCryptTool();
+        bankKeys.loadFromKeystore("ecom.keystore","pwdpwd","picsoukeys");
 
         while (isRunning()) {
             synchronized (taskQueue) {
@@ -59,17 +65,16 @@ public class ThreadBankACQ extends Thread {
 
                     switch (request) {
                         case "REQPAY": {
-                            // reçois une liste ? Ou direct le prix total
+                            // receive debit request
                             DebitRequest debitRequest = (DebitRequest) reader.readObject();
-
-                            // Check signature
-                            byte[] toVerify = debitRequest.getAuthServer().concatForSignature();
-                            if(!gothamBankCertificate.verifyAuthentication(toVerify,debitRequest.getAuthServer().getSignature())){
-                                System.out.println("Signature incorrecte");
-                                break;
-                            }
                             // Signature ok => Process with payment and contact ACS
-                            sslDebitAsk(debitRequest);
+                            if(sslDebitAsk(debitRequest)){
+                                writer.writeUTF("OK");
+                            }
+                            else{
+                                writer.writeUTF("NOT OK");
+                            }
+                            writer.flush();
 
                             break;
                         }
@@ -81,13 +86,17 @@ public class ThreadBankACQ extends Thread {
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (NoSuchProviderException e) {
+                    e.printStackTrace();
                 }
             }
         }
 
     }
 
-    private void sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException {
+    private boolean sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException, NoSuchProviderException, NoSuchAlgorithmException {
         // Act as a client towards ACS
         Socket paySocket = new Socket(hostACS,portACSMoney);
         System.out.println("#ACQ - Débit request# -> Client se connecte : " + paySocket.getInetAddress().toString());
@@ -106,9 +115,37 @@ public class ThreadBankACQ extends Thread {
         // receive server hello and certificate
         SSLHello servHello = (SSLHello) payReader.readObject();
         CertificateHandler servCertif = (CertificateHandler) payReader.readObject();
-        
-//        if(certificate.checkSignature() && certificate.checkValidity()) return false;
 
+        if(servCertif.checkSignature() && servCertif.checkValidity()) {
+            System.out.println("Certificat invalide !!");
+        }
+
+        AsymmetricCryptTool serverCrypt = new AsymmetricCryptTool();
+        serverCrypt.setPublicKey(serverCrypt.getPublicKey());
+
+        // Check signature of DebitRequest
+        byte[] toVerify = debitRequest.getAuthServer().concatForSignature();
+        if(!serverCrypt.verifyAuthentication(toVerify,debitRequest.getAuthServer().getSignature())){
+            System.out.println("Signature incorrecte -- Client avec mauvaise banque ?");
+        }
+
+        // Classic SSL : Generate pre master and encrypt it with Server Pk
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(clientHello.getRnd_cli());
+        output.write(servHello.getRnd_serv());
+        output.write(servHello.getSessionId());
+        byte[] toHash = output.toByteArray();
+        HashedObject hashed = new HashedObject(toHash, "SHA-256");
+        TransferObject preMaster = new TransferObject(serverCrypt.encrypt(hashed.getBytes()));
+        payWriter.writeObject(preMaster); payWriter.flush();
+
+        SecureRandom secureRandom = new SecureRandom();
+
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES","BC");
+        keyGenerator.init(2);
+        keyGenerator.generateKey();
+
+        return true;
     }
 
 

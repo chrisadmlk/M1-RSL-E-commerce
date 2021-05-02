@@ -23,7 +23,7 @@ public class ServerStore implements ServerThreadPool {
 
     public ServerStore() {
         try {
-//            loadProperties();
+//           loadProperties();
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             e.printStackTrace();
