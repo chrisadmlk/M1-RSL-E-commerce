@@ -1,15 +1,12 @@
 package client_ACS.obj;
 
+import common.CurrentDate;
 import common.ObjTransformer;
 import mysecurity.utils.HashedObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.*;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
 
 public class AuthClientRequest implements Serializable {
     private String name;
@@ -23,15 +20,11 @@ public class AuthClientRequest implements Serializable {
         // Name
         this.name = name;
         // Date
-        dateRequest = getCurrentDate();
+        dateRequest = CurrentDate.get();
         // Digest with pin
         digest = createDigest(pin);
     }
 
-    private String getCurrentDate() {
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        return format.format(new Date(System.currentTimeMillis()));
-    }
 
     public HashedObject createDigest(String pin) {
         return new HashedObject(

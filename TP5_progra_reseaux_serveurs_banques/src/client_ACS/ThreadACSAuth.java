@@ -4,7 +4,7 @@ import client_ACS.obj.AuthClientRequest;
 import client_ACS.obj.AuthServerResponse;
 import common.BeanAccessOracle;
 import common.ObjTransformer;
-import mysecurity.tramap.AsymmetricCryptTool;
+import mysecurity.encryption.AsymmetricCryptTool;
 
 import java.io.*;
 import java.net.Socket;
@@ -43,6 +43,8 @@ public class ThreadACSAuth extends Thread {
                 switch (request) {
                     case "SECURE": {
                         // Certificate is simulated with a KeyPair
+
+
 
                         // Sending public key
                         writer.writeObject(serverACQKeys.getPublicKey());
