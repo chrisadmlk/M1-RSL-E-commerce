@@ -23,6 +23,7 @@ grant all privileges to ACQ;
 CREATE TABLE ACS.Clients(
     nom_client VARCHAR2(50) NOT NULL,
     pin VARCHAR2(50) NOT NULL,
+    solde NUMBER,
 
     CONSTRAINT pk_login PRIMARY KEY(nom_client)
 );
