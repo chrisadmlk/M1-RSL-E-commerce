@@ -51,7 +51,7 @@ public class ThreadStore extends Thread {
                             // reçois une liste ? Ou direct le prix total
                             reader.readObject();
 
-                            
+
 
 
                             break;

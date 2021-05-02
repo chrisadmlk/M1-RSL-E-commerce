@@ -2,6 +2,7 @@ package marchand_ACQ;
 
 import marchand_ACQ.obj.DebitRequest;
 import mysecurity.certificate.CertificateHandler;
+import mysecurity.encryption.AlgorithmParam;
 import mysecurity.encryption.AsymmetricCryptTool;
 import mysecurity.utils.HashedObject;
 import mysecurity.utils.SSLHello;
@@ -13,9 +14,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.util.LinkedList;
 
 public class ThreadBankACQ extends Thread {
@@ -90,13 +91,15 @@ public class ThreadBankACQ extends Thread {
                     e.printStackTrace();
                 } catch (NoSuchProviderException e) {
                     e.printStackTrace();
+                } catch (InvalidAlgorithmParameterException e) {
+                    e.printStackTrace();
                 }
             }
         }
 
     }
 
-    private boolean sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException, NoSuchProviderException, NoSuchAlgorithmException {
+    private boolean sslDebitAsk(DebitRequest debitRequest) throws IOException, ClassNotFoundException, NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         // Act as a client towards ACS
         Socket paySocket = new Socket(hostACS,portACSMoney);
         System.out.println("#ACQ - Débit request# -> Client se connecte : " + paySocket.getInetAddress().toString());
@@ -139,10 +142,8 @@ public class ThreadBankACQ extends Thread {
         TransferObject preMaster = new TransferObject(serverCrypt.encrypt(hashed.getBytes()));
         payWriter.writeObject(preMaster); payWriter.flush();
 
-        SecureRandom secureRandom = new SecureRandom();
-
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES","BC");
-        keyGenerator.init(2);
+        keyGenerator.init(new AlgorithmParam(hashed.getBytes()));
         keyGenerator.generateKey();
 
         return true;
