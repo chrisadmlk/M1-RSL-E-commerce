@@ -49,7 +49,7 @@ public class ServerACS {
             // Factory
             SSLServerSocketFactory sslSocketFactory = sslContext.getServerSocketFactory();
             // Socket
-            serverMoneySocket = (SSLServerSocket) sslSocketFactory.createServerSocket(51001);
+            serverMoneySocket = (SSLServerSocket) sslSocketFactory.createServerSocket(portMoney);
 
 
         } catch (IOException

@@ -18,4 +18,11 @@ public class Catalog implements Serializable {
     public void setItems(List<ItemStore> items) {
         this.items = items;
     }
+
+    @Override
+    public String toString() {
+        return "Catalog{" +
+                "items=" + items +
+                '}';
+    }
 }

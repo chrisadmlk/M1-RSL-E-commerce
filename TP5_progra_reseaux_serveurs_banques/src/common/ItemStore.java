@@ -1,6 +1,8 @@
 package common;
 
-public class ItemStore {
+import java.io.Serializable;
+
+public class ItemStore implements Serializable {
     private int id;
     private String name;
     private int quantity;
@@ -43,5 +45,15 @@ public class ItemStore {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemStore{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                '}' + "\n";
     }
 }
