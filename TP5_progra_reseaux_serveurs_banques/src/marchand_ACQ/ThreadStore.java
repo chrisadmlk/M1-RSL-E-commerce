@@ -60,58 +60,10 @@ public class ThreadStore extends Thread {
 
                     switch (request) {
                         case "CATALOG": {
-                            // Envoi le catalogue au client
-                            ResultSet resultSet = beanOracle.executeQuery("SELECT * FROM MERCHANT.Stock");
-                            Catalog catalog = new Catalog();
-                            int index = 1;
-                            while (resultSet.next()) {
-                                ItemStore item = new ItemStore(
-                                        index,
-                                        resultSet.getString("item_name"),
-                                        resultSet.getInt("quantity"),
-                                        resultSet.getDouble("price")
-                                );
-                                catalog.getItems().add(item);
-                            }
-                            writer.writeObject(catalog);
-                            writer.flush();
+                            sendCatalog();
                         }
-
                         case "PAY": {
-                            // reçois un catalogue choisi par le client (un panier en gros)
-                            Catalog catalog = (Catalog) reader.readObject();
-                            double price = 0;
-                            for (int i = 0; i < catalog.getItems().size(); i++) {
-                                ItemStore tmp = catalog.getItems().get(i);
-                                double tmpPrice = tmp.getQuantity() * tmp.getPrice();
-                                price += tmpPrice;
-                            }
-                            AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
-                            DebitRequest debitRequest = new DebitRequest(price, authentication);
-                            // Client with ACQ
-                            Socket paySocket = new Socket(hostACQ, portACQ);
-                            ObjectOutputStream payWriter = new ObjectOutputStream(paySocket.getOutputStream());
-                            ObjectInputStream payReader = new ObjectInputStream(paySocket.getInputStream());
-                            // send reqpay
-                            payWriter.writeUTF("REQPAY");
-                            payWriter.flush();
-                            payWriter.writeObject(debitRequest);
-                            payWriter.flush();
-
-                            String response = payReader.readUTF();
-                            if(response.equals("OK")){
-                                System.out.println("---Server store : Payement effectué ! --");
-                                writer.writeUTF("OK");
-                            }
-                            else {
-                                System.out.println("---Server store : Payement échoué ! --");
-                                writer.writeUTF("CANCEL");
-                            }
-                            writer.flush();
-                            // Close
-                            paySocket.close();
-                            payWriter.close();
-                            payReader.close();
+                            executePayment();
                             break;
                         }
                         case "END" : {
@@ -130,6 +82,62 @@ public class ThreadStore extends Thread {
                 }
             }
         }
+    }
+
+    private void sendCatalog() throws SQLException, IOException {
+        // Envoi le catalogue au client
+        ResultSet resultSet = beanOracle.executeQuery("SELECT * FROM MERCHANT.Stock");
+        Catalog catalog = new Catalog();
+        int index = 1;
+        while (resultSet.next()) {
+            ItemStore item = new ItemStore(
+                    index,
+                    resultSet.getString("item_name"),
+                    resultSet.getInt("quantity"),
+                    resultSet.getDouble("price")
+            );
+            catalog.getItems().add(item);
+        }
+        writer.writeObject(catalog);
+        writer.flush();
+    }
+
+    private void executePayment() throws IOException, ClassNotFoundException {
+        // reçois un catalogue choisi par le client (un panier en gros)
+        Catalog catalog = (Catalog) reader.readObject();
+        double price = 0;
+        for (int i = 0; i < catalog.getItems().size(); i++) {
+            ItemStore tmp = catalog.getItems().get(i);
+            double tmpPrice = tmp.getQuantity() * tmp.getPrice();
+            price += tmpPrice;
+        }
+        AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
+        DebitRequest debitRequest = new DebitRequest(price, authentication);
+        // Client with ACQ
+        Socket paySocket = new Socket(hostACQ, portACQ);
+        ObjectOutputStream payWriter = new ObjectOutputStream(paySocket.getOutputStream());
+        ObjectInputStream payReader = new ObjectInputStream(paySocket.getInputStream());
+        // send reqpay
+        payWriter.writeUTF("REQPAY");
+        payWriter.flush();
+        payWriter.writeObject(debitRequest);
+        payWriter.flush();
+
+        // Get response from transaction
+        String response = payReader.readUTF();
+        if(response.equals("OK")){
+            System.out.println("---Server store : Payement effectué ! --");
+            writer.writeUTF("OK");
+        }
+        else {
+            System.out.println("---Server store : Payement échoué ! --");
+            writer.writeUTF("CANCEL");
+        }
+        writer.flush();
+        // Close
+        paySocket.close();
+        payWriter.close();
+        payReader.close();
     }
 
 
