@@ -8,7 +8,7 @@ public class DebitRequest implements Serializable {
     private double debit;
     private AuthServerResponse authServer;
 
-    public DebitRequest(int debit, AuthServerResponse authServer) {
+    public DebitRequest(double debit, AuthServerResponse authServer) {
         this.debit = debit;
         this.authServer = authServer;
     }

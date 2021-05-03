@@ -1,5 +1,6 @@
 package marchand_ACQ;
 
+import common.BeanAccessOracle;
 import marchand_ACQ.obj.DebitRequest;
 import mysecurity.encryption.AsymmetricCryptTool;
 
@@ -11,6 +12,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 
 public class ThreadBankACQ extends Thread {
@@ -21,6 +24,7 @@ public class ThreadBankACQ extends Thread {
     private ObjectOutputStream writer = null;
 
     private AsymmetricCryptTool bankKeys;
+    private BeanAccessOracle beanOracle;
 
     private boolean running = true;
     private final int portACSMoney = 51001;
@@ -28,6 +32,11 @@ public class ThreadBankACQ extends Thread {
 
     public ThreadBankACQ(LinkedList<Socket> taskQueue) {
         this.taskQueue = taskQueue;
+        try {
+            beanOracle = new BeanAccessOracle("ACQ");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -87,17 +96,17 @@ public class ThreadBankACQ extends Thread {
 
         try {
             // Keystore
-            KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
+            KeyStore serverACQKeystore = KeyStore.getInstance("JKS");
             String FILE_KEYSTORE = "serverAcq_keystore";
             char[] passwd = "pwdpwd".toCharArray();
             FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
-            serverACSKeyStore.load(serverInput, passwd);
+            serverACQKeystore.load(serverInput, passwd);
             // Context
             SSLContext sslContext = SSLContext.getInstance("SSLv3");
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-            keyManagerFactory.init(serverACSKeyStore, passwd);
+            keyManagerFactory.init(serverACQKeystore, passwd);
             TrustManagerFactory trustFactory = TrustManagerFactory.getInstance("SunX509");
-            trustFactory.init(serverACSKeyStore);
+            trustFactory.init(serverACQKeystore);
             sslContext.init(keyManagerFactory.getKeyManagers(), trustFactory.getTrustManagers(), null);
             // Factory
             SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
@@ -116,15 +125,25 @@ public class ThreadBankACQ extends Thread {
             String response = payReader.readUTF();
             if (response.equals("SUCCESS")) {
                 isSuccessful = true;
+                double debit = debitRequest.getDebit();
+                updateBalance(debit);
             }
             // Close everything
             payWriter.close();
             payReader.close();
             paySocket.close();
-        } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | KeyManagementException e) {
+        } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | KeyManagementException | SQLException e) {
             e.printStackTrace();
         }
         return isSuccessful;
+    }
+
+    private void updateBalance(double debit) throws SQLException, IOException {
+        String clientName = "CrazyNature";
+        ResultSet resultSet = beanOracle.executeQuery("SELECT solde FROM ACS.Clients WHERE nom_client = " + clientName);
+        resultSet.next();
+        double solde = resultSet.getDouble("solde") + debit;
+        beanOracle.executeQuery("UPDATE ACS.Clients SET solde = " + solde + "  WHERE nom_client = " + clientName);
     }
 
     private void closeConnexion() throws IOException {

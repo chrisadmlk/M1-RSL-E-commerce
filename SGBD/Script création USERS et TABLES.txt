@@ -18,7 +18,23 @@ grant all privileges to ACQ;
 
 
 
+CREATE TABLE ACQ.Clients(
+    nom_client VARCHAR2(50) NOT NULL,
+    pin VARCHAR2(50) NOT NULL,
+    solde NUMBER,
 
+    CONSTRAINT pk_login PRIMARY KEY(nom_client)
+);
+
+
+CREATE TABLE ACQ.Virements(
+    nom_client VARCHAR2(50) NOT NULL,
+    montant NUMBER NOT NULL,
+
+    CONSTRAINT fk_virements_clients
+    FOREIGN KEY (nom_client)
+    REFERENCES ACQ.Clients (nom_client)
+);
 
 CREATE TABLE ACS.Clients(
     nom_client VARCHAR2(50) NOT NULL,
@@ -99,10 +115,11 @@ CREATE TABLE MERCHANT.Commands(
  Insert into MERCHANT.Login(lgn, pwd) values ('user1', 'pwd1');
  Insert into MERCHANT.Login(lgn, pwd) values ('Cyril', 'azerty');
 
- Insert into ACS.Clients(nom_client, pin) values ('Cyril', '123');
- Insert into ACS.Clients(nom_client, pin) values ('Client2', 'azerty');
- Insert into ACS.Clients(nom_client, pin) values ('Client3', 'superpin');
- Insert into ACS.Clients(nom_client,pin) values ('Bruce Wayne', '2222');
+ Insert into ACS.Clients(nom_client, pin) values ('Cyril', '123',5000000);
+ Insert into ACS.Clients(nom_client, pin) values ('Client2', 'azerty',100);
+ Insert into ACS.Clients(nom_client, pin) values ('Client3', 'superpin',100);
+ Insert into ACS.Clients(nom_client,pin,solde) values ('Bruce Wayne', '2222',2000000);
+Insert into ACQ.Clients(nom_client,pin,solde) values ('CrazyNature','1234',3524123);
 
 
 

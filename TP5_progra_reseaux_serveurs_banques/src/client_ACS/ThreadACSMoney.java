@@ -55,7 +55,7 @@ public class ThreadACSMoney extends Thread {
                         String clientName = debitRequest.getAuthServer().getClientName();
                         ResultSet resultSet = beanOracle.executeQuery("SELECT solde FROM ACS.Clients WHERE nom_client = " + clientName);
                         resultSet.next();
-                        int solde = resultSet.getInt("solde");
+                        double solde = resultSet.getDouble("solde") + debitRequest.getDebit();
                         beanOracle.executeQuery("UPDATE ACS.Clients SET solde = " + solde + "  WHERE nom_client = " + clientName);
                         // Débite le compte
                         writer.writeUTF("SUCCESS");

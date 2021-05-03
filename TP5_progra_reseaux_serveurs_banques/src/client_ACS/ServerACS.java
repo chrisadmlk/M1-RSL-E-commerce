@@ -35,7 +35,7 @@ public class ServerACS {
             // SSL for Money
             // Keystore
             KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
-            String FILE_KEYSTORE = "serverAcs_keystore";
+            String FILE_KEYSTORE = "F:\\Workspace\\school\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\serverAcs_keystore";
             char[] passwd = "pwdpwd".toCharArray();
             FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
             serverACSKeyStore.load(serverInput,passwd);
