@@ -42,10 +42,6 @@ public class ThreadACSAuth extends Thread {
                 System.out.println("*AUTH* -> " + currentThread().getName() + " - Type de requete : " + request);
                 switch (request) {
                     case "SECURE": {
-                        // Certificate is simulated with a KeyPair
-
-
-
                         // Sending public key
                         writer.writeObject(serverACQKeys.getPublicKey());
                         writer.flush();

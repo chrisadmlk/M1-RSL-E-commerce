@@ -18,7 +18,7 @@ public class ServerBankACQ implements ServerThreadPool {
     private LinkedList<Socket> taskQueue = null;
     // Default values
     private int MAX_THREADS = 5;
-    private int port = 51001;
+    private int port = 51003;
     private ServerSocket serverSocket = null;
 
     public ServerBankACQ() {

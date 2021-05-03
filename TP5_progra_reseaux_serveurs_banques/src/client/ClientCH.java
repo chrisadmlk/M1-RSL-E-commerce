@@ -1,6 +1,8 @@
 package client;
 
 
+import common.Catalog;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,7 +36,7 @@ public class ClientCH extends JFrame{
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startClient("127.0.0.1",50001);
+                startClient("127.0.0.1",51000);
             }
         });
     }
@@ -55,9 +57,9 @@ public class ClientCH extends JFrame{
             }
             alreadyLog = true;
 
-            writer.writeUTF("Coucou"); writer.flush();
-
             receiveCatalog();
+
+
 
 
         } catch (IOException | ClassNotFoundException e) {
@@ -66,8 +68,9 @@ public class ClientCH extends JFrame{
     }
 
     private void receiveCatalog() throws IOException, ClassNotFoundException {
-//        Catalog catalog = (Catalog) reader.readObject();
-//        catalogArea.setText(catalog.toString());
+        writer.writeUTF("CATALOG"); writer.flush();
+        Catalog catalog = (Catalog) reader.readObject();
+        catalogArea.setText(catalog.toString());
     }
 
     private void stopClient() {

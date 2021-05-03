@@ -67,8 +67,13 @@ public class ServerStore implements ServerThreadPool {
 
     @Override
     public void createThread() {
-        ThreadStore threadClient = new ThreadStore(taskQueue);
-        threadClient.start();
+        ThreadStore threadClient = null;
+        try {
+            threadClient = new ThreadStore(taskQueue);
+            threadClient.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
