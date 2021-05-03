@@ -114,6 +114,7 @@ public class ServerACS {
         });
         thSocketHandlerAuth.start();
         thSocketHandlerMoney.start();
+        System.out.println("£ ACS £ -- Starting");
     }
 
 

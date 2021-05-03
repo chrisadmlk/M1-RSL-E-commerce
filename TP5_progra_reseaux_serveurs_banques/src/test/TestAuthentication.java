@@ -62,6 +62,7 @@ public class TestAuthentication {
 
                     AuthServerResponse response = (AuthServerResponse) reader.readObject();
                     System.out.println("Auth réussie : " + response.toString());
+                    System.out.println("Auth réussie : " + reader.readUTF());
 
                 } catch (IOException | ClassNotFoundException e ){
                     e.printStackTrace();

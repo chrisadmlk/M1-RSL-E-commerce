@@ -9,8 +9,15 @@ import javax.swing.*;
 
 public class MainTest {
     public static void main(String[] args) {
-        ServerACS serverACS = new ServerACS();
-        serverACS.startServer();
+        Thread server = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ServerACS serverACS = new ServerACS();
+                serverACS.startServer();
+            }
+        });
+        server.start();
+
         ServerBankACQ serverBankACQ = new ServerBankACQ();
         serverBankACQ.startServer();
         ServerStore serverStore = new ServerStore();

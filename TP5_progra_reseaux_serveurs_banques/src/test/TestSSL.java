@@ -25,7 +25,6 @@ public class TestSSL {
         boolean isSuccessful = false;
 
         try {
-
             // Keystore
             KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
             String FILE_KEYSTORE = "F:\\Workspace\\school\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\serverAcq_keystore";

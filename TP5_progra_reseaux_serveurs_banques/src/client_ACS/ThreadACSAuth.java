@@ -88,9 +88,10 @@ public class ThreadACSAuth extends Thread {
                                 serial,
                                 serverACSkeys.authenticate(concat.getBytes())
                         );
-                        writer.writeUTF("OK");
-                        writer.flush();
+
                         writer.writeObject(authServerResponse);
+                        writer.flush();
+                        writer.writeUTF("OK");
                         writer.flush();
                         break;
                     }

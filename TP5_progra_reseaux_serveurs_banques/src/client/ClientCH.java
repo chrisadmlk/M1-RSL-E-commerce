@@ -37,12 +37,10 @@ public class ClientCH extends JFrame {
 
     public Socket clientSocket;
     private boolean alreadyLog = false;
-    private int portAuth = 51002;
-    private String hostAuth = "localhost";
 
     public ClientCH() {
         add(clientGUI);
-        setTitle("Application Mouvements");
+        setTitle("Batclient");
         setSize(1000, 800);
 
         list = new ArrayList<>();
@@ -117,15 +115,20 @@ public class ClientCH extends JFrame {
     }
 
     private AuthServerResponse authenticateProcess() throws IOException, ClassNotFoundException {
-        System.out.println("Client ---> S'authentifie");
+        int portAuth = 51002;
+        String hostAuth = "localhost";
         Socket authSocket = new Socket(hostAuth, portAuth);
+        System.out.println("Client ---> Se connecte à ACS   - 1");
+
         ObjectInputStream authReader = new ObjectInputStream(authSocket.getInputStream());
         ObjectOutputStream authWriter = new ObjectOutputStream(authSocket.getOutputStream());
+
+        System.out.println("Client ---> Se connecte à ACS    - 2");
 
         AsymmetricCryptTool myKeys = new AsymmetricCryptTool();
         AsymmetricCryptTool serverKey = new AsymmetricCryptTool();
 
-        System.out.println("Client ---> Se connecte à ACS");
+        System.out.println("Client ---> Se connecte à ACS     - 3");
 
         // Crée une paire de clé pour le client
         myKeys.createKeyPair();
@@ -133,7 +136,7 @@ public class ClientCH extends JFrame {
         authWriter.writeUTF("SECURE");
         authWriter.flush();
         serverKey.setPublicKey((PublicKey) authReader.readObject());
-        authWriter.writeObject(myKeys.getPublicKey());
+        authWriter.writeObject(myKeys.getPublicKey()); authWriter.flush();
 
         // Authenticate
         authWriter.writeUTF("AUTH");
