@@ -65,8 +65,8 @@ public class ServerACS {
     public void startServer() {
         System.out.println("Démarrage ACS");
 
-        AsymmetricCryptTool serverACQKeys = new AsymmetricCryptTool();
-        serverACQKeys.loadFromKeystore("serverAcs_keystore","pwdpwd","acskeys");
+        AsymmetricCryptTool serverACSkeys = new AsymmetricCryptTool();
+        serverACSkeys.loadFromKeystore("serverAcs_keystore","pwdpwd","acskeys");
 
         Thread thSocketHandlerMoney = new Thread(new Runnable() {
             @Override
@@ -74,7 +74,7 @@ public class ServerACS {
                 while (isRunning) {
                     try {
                         SSLSocket workMoneySocket = (SSLSocket) serverMoneySocket.accept();
-                        ThreadACSMoney thMoney = new ThreadACSMoney(workMoneySocket,serverACQKeys);
+                        ThreadACSMoney thMoney = new ThreadACSMoney(workMoneySocket,serverACSkeys);
                         thMoney.start();
                         System.out.println("*-> Connexion d'un client reçu sur le port Money\n*-> En attente du login");
                     } catch (IOException e) {
@@ -96,7 +96,7 @@ public class ServerACS {
                 while (isRunning) {
                     try {
                         Socket workAuthSocket = serverAuthSocket.accept();
-                        ThreadACSAuth thAuth = new ThreadACSAuth(workAuthSocket,serverACQKeys);
+                        ThreadACSAuth thAuth = new ThreadACSAuth(workAuthSocket,serverACSkeys);
                         thAuth.start();
                         System.out.println("*-> Connexion d'un client reçu sur le port Auth\n*-> En attente du login");
                     } catch (IOException e) {

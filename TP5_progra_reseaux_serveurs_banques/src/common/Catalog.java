@@ -21,8 +21,6 @@ public class Catalog implements Serializable {
 
     @Override
     public String toString() {
-        return "Catalog{" +
-                "items=" + items +
-                '}';
+        return " --- \nCatalog : \n" + items + " --- \n";
     }
 }

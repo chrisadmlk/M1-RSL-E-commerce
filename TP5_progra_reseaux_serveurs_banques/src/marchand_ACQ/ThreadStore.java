@@ -61,8 +61,10 @@ public class ThreadStore extends Thread {
                     switch (request) {
                         case "CATALOG": {
                             sendCatalog();
+                            break;
                         }
                         case "PAY": {
+                            System.out.println("Requête payment 1");
                             executePayment();
                             break;
                         }
@@ -104,7 +106,11 @@ public class ThreadStore extends Thread {
 
     private void executePayment() throws IOException, ClassNotFoundException, SQLException {
         // reçois un catalogue choisi par le client (un panier en gros)
+        System.out.println("Requête payment 2");
+
         Catalog cltCatalog = (Catalog) reader.readObject();
+        System.out.println("Requête payment 3");
+
         double price = getPrice(cltCatalog);
         AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
         DebitRequest debitRequest = new DebitRequest(price, authentication);
