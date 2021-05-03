@@ -34,7 +34,7 @@ public class HashedObject extends TransferObject {
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
         }
-        System.out.println(compare + " -- " + getBytes());
+//        System.out.println(compare + " -- " + getBytes());
         // return compare == getBytes();
         return MessageDigest.isEqual(compare,getBytes());
     }

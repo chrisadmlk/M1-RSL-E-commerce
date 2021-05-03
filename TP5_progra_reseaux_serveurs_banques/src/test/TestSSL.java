@@ -25,7 +25,6 @@ public class TestSSL {
         boolean isSuccessful = false;
 
         try {
-
             // Keystore
             KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
             String FILE_KEYSTORE = "F:\\Workspace\\school\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\serverAcq_keystore";
@@ -57,7 +56,7 @@ public class TestSSL {
             // Send MONEY request
             payWriter.writeUTF("MONEY");
             payWriter.flush();
-            AuthServerResponse authServerResponse = new AuthServerResponse("Gotham","Bruce Wayne",41111);
+            AuthServerResponse authServerResponse = new AuthServerResponse("Gotham National Bank","Bruce Wayne",41111);
             DebitRequest debitRequest = new DebitRequest(5000,authServerResponse);
             payWriter.writeObject(debitRequest);
             payWriter.flush();

@@ -14,7 +14,7 @@ public class BeanAccessOracle {
         String url = "jdbc:oracle:thin:@localhost:1521/orcl";
         //String username = "CC";
         String pwd = "gendarme";
-        System.out.println("!/! -Connexion réussie à la db- " + url + " " + username + " " + pwd);
+//        System.out.println("!/! -Connexion réussie à la db- " + url + " " + username + " " + pwd);
 
         con = DriverManager.getConnection(url, username, pwd);
         instruc = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -37,10 +37,10 @@ public class BeanAccessOracle {
 
     public String getPIN(String clientName) throws SQLException {
         PreparedStatement researchPIN = con.prepareStatement("SELECT * FROM ACS.Clients WHERE nom_client = ?");
-        researchPIN.setString(1,clientName);
+        researchPIN.setString(1, clientName);
         ResultSet result = researchPIN.executeQuery();
         String pin = "0";
-        if(result.next()){
+        if (result.next()) {
             pin = result.getString("pin");
         }
         return pin;

@@ -17,7 +17,7 @@ public class ThreadACSAuth extends Thread {
     private ObjectOutputStream writer = null;
     private BeanAccessOracle beanOracle;
 
-    private AsymmetricCryptTool serverACQKeys;
+    private AsymmetricCryptTool serverACSkeys;
     private AsymmetricCryptTool clientKeys;
 
     public ThreadACSAuth(Socket workSocket, AsymmetricCryptTool serverKeys) {
@@ -26,7 +26,7 @@ public class ThreadACSAuth extends Thread {
             reader = new ObjectInputStream(socket.getInputStream());
             writer = new ObjectOutputStream(socket.getOutputStream());
             beanOracle = new BeanAccessOracle("ACS");
-            serverACQKeys = serverKeys;
+            serverACSkeys = serverKeys;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -43,9 +43,9 @@ public class ThreadACSAuth extends Thread {
                 switch (request) {
                     case "SECURE": {
                         // Sending public key
-                        writer.writeObject(serverACQKeys.getPublicKey());
+                        writer.writeObject(serverACSkeys.getPublicKey());
                         writer.flush();
-                        // Receive ACQ public key
+                        // Receive client public key
                         clientKeys = new AsymmetricCryptTool();
                         clientKeys.setPublicKey((PublicKey) reader.readObject());
                         break;
@@ -61,15 +61,19 @@ public class ThreadACSAuth extends Thread {
                         copyToVerify.setName(authClientRequest.getName());
                         copyToVerify.setDateRequest(authClientRequest.getDateRequest());
                         copyToVerify.setDigest(authClientRequest.getDigest());
-                        if(!clientKeys.verifyAuthentication(copyToVerify.gatherInfos(), authClientRequest.getSignature())){
+                        if (!clientKeys.verifyAuthentication(copyToVerify.gatherInfos(), authClientRequest.getSignature())) {
                             System.out.println("Signature incorrecte");
+                            writer.writeUTF("CANCEL");
+                            writer.flush();
                             break;
                         }
 
                         // Verify digest with PIN
                         String pin = beanOracle.getPIN(name);
-                        if(!authClientRequest.getDigest().verifyHash(ObjTransformer.ObjToByteArray(name + dateRequest + pin))){
+                        if (!authClientRequest.getDigest().verifyHash(ObjTransformer.ObjToByteArray(name + dateRequest + pin))) {
                             System.out.println("Hash + pin incorrect -- Authentification impossible");
+                            writer.writeUTF("CANCEL");
+                            writer.flush();
                             break;
                         }
 
@@ -82,9 +86,19 @@ public class ThreadACSAuth extends Thread {
                                 bankName,
                                 authClientRequest.getName(),
                                 serial,
-                                serverACQKeys.authenticate(concat.getBytes())
+                                serverACSkeys.authenticate(concat.getBytes())
                         );
-                        writer.writeObject(authServerResponse); writer.flush();
+                        writer.writeUTF("OK");
+                        writer.flush();
+                        writer.writeObject(authServerResponse);
+                        writer.flush();
+                        endSession();
+                        break;
+                    }
+                    case "END" : {
+                        writer.close();
+                        reader.close();
+                        socket.close();
                         break;
                     }
 
@@ -97,5 +111,11 @@ public class ThreadACSAuth extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void endSession() throws IOException {
+        writer.close();
+        reader.close();
+        socket.close();
     }
 }
