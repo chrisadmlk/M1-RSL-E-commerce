@@ -102,15 +102,10 @@ public class ThreadStore extends Thread {
         writer.flush();
     }
 
-    private void executePayment() throws IOException, ClassNotFoundException {
+    private void executePayment() throws IOException, ClassNotFoundException, SQLException {
         // reçois un catalogue choisi par le client (un panier en gros)
-        Catalog catalog = (Catalog) reader.readObject();
-        double price = 0;
-        for (int i = 0; i < catalog.getItems().size(); i++) {
-            ItemStore tmp = catalog.getItems().get(i);
-            double tmpPrice = tmp.getQuantity() * tmp.getPrice();
-            price += tmpPrice;
-        }
+        Catalog cltCatalog = (Catalog) reader.readObject();
+        double price = getPrice(cltCatalog);
         AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
         DebitRequest debitRequest = new DebitRequest(price, authentication);
         // Client with ACQ
@@ -128,6 +123,7 @@ public class ThreadStore extends Thread {
         if(response.equals("OK")){
             System.out.println("---Server store : Payement effectué ! --");
             writer.writeUTF("OK");
+            updateQuantitiesInDB(cltCatalog);
         }
         else {
             System.out.println("---Server store : Payement échoué ! --");
@@ -140,6 +136,25 @@ public class ThreadStore extends Thread {
         payReader.close();
     }
 
+    private void updateQuantitiesInDB(Catalog cltCatalog) throws SQLException {
+        for (int i = 0; i < cltCatalog.getItems().size(); i++) {
+            ItemStore tmp = cltCatalog.getItems().get(i);
+            ResultSet resultSet = beanOracle.executeQuery("SELECT quantity FROM MERCHANT.Stock WHERE item_name = " + tmp.getName());
+            resultSet.next();
+            int quantity = resultSet.getInt("quantity") - tmp.getQuantity();
+            beanOracle.executeQuery("UPDATE MERCHANT.Stock SET quantity = " + quantity);
+        }
+    }
+
+    private double getPrice(Catalog catalog) {
+        double price = 0;
+        for (int i = 0; i < catalog.getItems().size(); i++) {
+            ItemStore tmp = catalog.getItems().get(i);
+            double tmpPrice = tmp.getQuantity() * tmp.getPrice();
+            price += tmpPrice;
+        }
+        return price;
+    }
 
     private void closeConnexion() throws IOException {
         writer = null;
