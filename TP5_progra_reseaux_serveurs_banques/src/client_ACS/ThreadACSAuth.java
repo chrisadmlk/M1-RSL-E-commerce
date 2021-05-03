@@ -88,11 +88,17 @@ public class ThreadACSAuth extends Thread {
                                 serial,
                                 serverACSkeys.authenticate(concat.getBytes())
                         );
-
-                        writer.writeObject(authServerResponse);
-                        writer.flush();
                         writer.writeUTF("OK");
                         writer.flush();
+                        writer.writeObject(authServerResponse);
+                        writer.flush();
+                        endSession();
+                        break;
+                    }
+                    case "END" : {
+                        writer.close();
+                        reader.close();
+                        socket.close();
                         break;
                     }
 
@@ -105,5 +111,11 @@ public class ThreadACSAuth extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void endSession() throws IOException {
+        writer.close();
+        reader.close();
+        socket.close();
     }
 }

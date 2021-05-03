@@ -1,8 +1,10 @@
 package test;
 
+import client_ACS.ServerACS;
 import client_ACS.obj.AuthClientRequest;
 import client_ACS.obj.AuthServerResponse;
-import client_ACS.ServerACS;
+import marchand_ACQ.ServerBankACQ;
+import marchand_ACQ.ServerStore;
 import mysecurity.encryption.AsymmetricCryptTool;
 
 import java.io.IOException;
@@ -10,7 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.PublicKey;
-import java.util.Scanner;
 
 public class TestAuthentication {
     public static void main(String[] args) {
@@ -22,6 +23,13 @@ public class TestAuthentication {
             }
         });
         server.start();
+
+        ServerStore serverStore = new ServerStore();
+        serverStore.startServer();
+
+        ServerBankACQ serverBankACQ = new ServerBankACQ();
+        serverBankACQ.startServer();
+
         // Test with client :
         Thread client = new Thread(new Runnable() {
             @Override
@@ -36,9 +44,6 @@ public class TestAuthentication {
                     ObjectOutputStream writer = new ObjectOutputStream(clientSocket.getOutputStream());
                     ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
 
-                    Scanner sc = new Scanner(System.in);
-                    String line = sc.nextLine();
-                    System.out.printf("User input was: %s%n", line);
                     // Secure
                     writer.writeUTF("SECURE"); writer.flush();
                     AsymmetricCryptTool myKeys = new AsymmetricCryptTool();
@@ -48,9 +53,6 @@ public class TestAuthentication {
                     writer.writeObject(myKeys.getPublicKey());
 
                     System.out.println("Keys : " + serverKey.getPublicKey() + " - " + myKeys.getPublicKey());
-
-                    line = sc.nextLine();
-                    System.out.printf("User input was: %s%n", line);
 
                     // Authentication
                     writer.writeUTF("AUTH"); writer.flush();
@@ -62,7 +64,7 @@ public class TestAuthentication {
 
                     AuthServerResponse response = (AuthServerResponse) reader.readObject();
                     System.out.println("Auth réussie : " + response.toString());
-                    System.out.println("Auth réussie : " + reader.readUTF());
+                    System.out.println("TEST : " + reader.readUTF());
 
                 } catch (IOException | ClassNotFoundException e ){
                     e.printStackTrace();

@@ -56,7 +56,7 @@ public class TestSSL {
             // Send MONEY request
             payWriter.writeUTF("MONEY");
             payWriter.flush();
-            AuthServerResponse authServerResponse = new AuthServerResponse("Gotham","Bruce Wayne",41111);
+            AuthServerResponse authServerResponse = new AuthServerResponse("Gotham National Bank","Bruce Wayne",41111);
             DebitRequest debitRequest = new DebitRequest(5000,authServerResponse);
             payWriter.writeObject(debitRequest);
             payWriter.flush();

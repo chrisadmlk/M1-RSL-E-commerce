@@ -41,8 +41,7 @@ public class ThreadBankACQ extends Thread {
 
     @Override
     public void run() {
-        System.out.println("*-> Lancement du ThreadBank n° : " + Thread.currentThread().getName());
-
+        System.out.println("## Bank ACQ ## -> Lancement du ThreadBank n° : " + Thread.currentThread().getName());
 
         while (isRunning()) {
             synchronized(taskQueue) {
@@ -56,14 +55,14 @@ public class ThreadBankACQ extends Thread {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("*-> Prise en charge d'une connexion" +
+                    System.out.println("## Bank ACQ ## -> Prise en charge d'une connexion" +
                             "|| Thread : " + Thread.currentThread().getName());
                 }
             }
             if (socket != null) {
                 while (!socket.isClosed()) try {
                     String request = reader.readUTF();
-                    System.out.println("*-> " + currentThread().getName() + " - Type de requete : " + request);
+                    System.out.println("## Bank ACQ ## -> " + currentThread().getName() + " - Type de requete : " + request);
 
                     if ("REQPAY".equals(request)) {// receive debit request
                         DebitRequest debitRequest = (DebitRequest) reader.readObject();
@@ -144,13 +143,6 @@ public class ThreadBankACQ extends Thread {
         resultSet.next();
         double solde = resultSet.getDouble("solde") + debit;
         beanOracle.executeQuery("UPDATE ACS.Clients SET solde = " + solde + "  WHERE nom_client = " + clientName);
-    }
-
-    private void closeConnexion() throws IOException {
-        writer = null;
-        reader = null;
-        System.out.println("*-> Client déconnecté, on ferme la socket..");
-        socket.close();
     }
 
     public boolean isRunning() {

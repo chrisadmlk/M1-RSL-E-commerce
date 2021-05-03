@@ -115,42 +115,38 @@ public class ClientCH extends JFrame {
     }
 
     private AuthServerResponse authenticateProcess() throws IOException, ClassNotFoundException {
-        int portAuth = 51002;
-        String hostAuth = "localhost";
-        Socket authSocket = new Socket(hostAuth, portAuth);
-        System.out.println("Client ---> Se connecte à ACS   - 1");
+        Socket authSocket = null;
+        authSocket = new Socket("localhost", 51002);
+        System.out.println("#-> Client se connecte : " + authSocket.getInetAddress().toString());
 
-        ObjectInputStream authReader = new ObjectInputStream(authSocket.getInputStream());
         ObjectOutputStream authWriter = new ObjectOutputStream(authSocket.getOutputStream());
+        ObjectInputStream authReader = new ObjectInputStream(authSocket.getInputStream());
 
-        System.out.println("Client ---> Se connecte à ACS    - 2");
-
+        // Secure
+        authWriter.writeUTF("SECURE"); authWriter.flush();
         AsymmetricCryptTool myKeys = new AsymmetricCryptTool();
-        AsymmetricCryptTool serverKey = new AsymmetricCryptTool();
-
-        System.out.println("Client ---> Se connecte à ACS     - 3");
-
-        // Crée une paire de clé pour le client
         myKeys.createKeyPair();
-        // Secure connexion - PK trade
-        authWriter.writeUTF("SECURE");
-        authWriter.flush();
+        AsymmetricCryptTool serverKey = new AsymmetricCryptTool();
         serverKey.setPublicKey((PublicKey) authReader.readObject());
-        authWriter.writeObject(myKeys.getPublicKey()); authWriter.flush();
+        authWriter.writeObject(myKeys.getPublicKey());
 
-        // Authenticate
-        authWriter.writeUTF("AUTH");
-        authWriter.flush();
-        AuthClientRequest clientRequest = new AuthClientRequest("Bruce Wayne", "2222");
-        byte[] signature = myKeys.authenticate(clientRequest.gatherInfos());
-        clientRequest.setSignature(signature);
-        authWriter.writeObject(clientRequest);
-        authWriter.flush();
+        // Authentication
+        authWriter.writeUTF("AUTH"); authWriter.flush();
+        AuthClientRequest request = new AuthClientRequest("Bruce Wayne","2222");
+        request.setSignature(myKeys.authenticate(request.gatherInfos()));
+        authWriter.writeObject(request); authWriter.flush();
 
         String success = authReader.readUTF();
         if (success.equals("OK")) {
-            return (AuthServerResponse) reader.readObject();
+            AuthServerResponse response = (AuthServerResponse) authReader.readObject();
+            authReader.close();
+            authWriter.close();
+            authSocket.close();
+            return response;
         } else {
+            authReader.close();
+            authWriter.close();
+            authSocket.close();
             return null;
         }
     }
@@ -185,7 +181,6 @@ public class ClientCH extends JFrame {
         for (ItemStore itemStore : list) {
             itemCombo.addItem(itemStore.getName());
         }
-
     }
 
     private void stopClient() throws IOException {

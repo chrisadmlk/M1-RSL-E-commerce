@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 public class ServerStore implements ServerThreadPool {
-    private static final String FILE_PROPERTIES = "marchand_ACQ/ressources/store.properties";
+    private static final String FILE_PROPERTIES         = "marchand_ACQ/ressources/store.properties";
     private static final String PROPERTY_PORT           = "port";
     private static final String PROPERTY_MAX_THREADS    = "MAX_THREADS";
 
@@ -49,6 +49,7 @@ public class ServerStore implements ServerThreadPool {
         taskQueue = new LinkedList<>();
         ThreadServer threadServer = new ThreadServer(taskQueue,this);
         threadServer.start();
+        System.out.println("::: ServerStore ::: -> Starting");
     }
 
     public void close(){
@@ -79,7 +80,7 @@ public class ServerStore implements ServerThreadPool {
     @Override
     public synchronized void addToTask(Socket socketToHandle) {
         taskQueue.add(socketToHandle);
-        System.out.println("Voici : " + taskQueue);
+        System.out.println("::: ServerStore ::: -> TaskQueue : " + taskQueue);
     }
 
 

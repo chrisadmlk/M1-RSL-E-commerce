@@ -49,6 +49,7 @@ public class ServerBankACQ implements ServerThreadPool {
         taskQueue = new LinkedList<>();
         ThreadServer threadServer = new ThreadServer(taskQueue,this);
         threadServer.start();
+        System.out.println("## Bank ACQ ## -> Server Starting ");
     }
 
     public void close(){}
@@ -72,7 +73,7 @@ public class ServerBankACQ implements ServerThreadPool {
     @Override
     public synchronized void addToTask(Socket socketToHandle) {
         taskQueue.add(socketToHandle);
-        System.out.println("Voici : " + taskQueue);
+        System.out.println("## Bank ACQ ## -> TaskQueue : " + taskQueue);
     }
 
 

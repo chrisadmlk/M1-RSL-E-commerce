@@ -35,7 +35,7 @@ public class ThreadStore extends Thread {
 
     @Override
     public void run() {
-        System.out.println("*-> Lancement du ThreadClient n° : " + Thread.currentThread().getName());
+        System.out.println("::: ServerStore ::: -> Lancement du ThreadClient n° : " + Thread.currentThread().getName());
         boolean logged = false;
         while (isRunning()) {
             synchronized (taskQueue) {
@@ -49,14 +49,14 @@ public class ThreadStore extends Thread {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("*-> Prise en charge d'une connexion" +
+                    System.out.println("::: ServerStore ::: -> Prise en charge d'une connexion" +
                             "|| Thread : " + Thread.currentThread().getName());
                 }
             }
             if (socket != null) {
                 while (!socket.isClosed()) try {
                     String request = reader.readUTF();
-                    System.out.println("*-> " + currentThread().getName() + " - Type de requete : " + request);
+                    System.out.println("::: ServerStore ::: -> " + currentThread().getName() + " - Type de requete : " + request);
 
                     switch (request) {
                         case "CATALOG": {
@@ -64,7 +64,6 @@ public class ThreadStore extends Thread {
                             break;
                         }
                         case "PAY": {
-                            System.out.println("Requête payment 1");
                             executePayment();
                             break;
                         }
@@ -106,19 +105,17 @@ public class ThreadStore extends Thread {
 
     private void executePayment() throws IOException, ClassNotFoundException, SQLException {
         // reçois un catalogue choisi par le client (un panier en gros)
-        System.out.println("Requête payment 2");
-
         Catalog cltCatalog = (Catalog) reader.readObject();
-        System.out.println("Requête payment 3");
-
         double price = getPrice(cltCatalog);
         AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
         DebitRequest debitRequest = new DebitRequest(price, authentication);
+
         // Client with ACQ
         Socket paySocket = new Socket(hostACQ, portACQ);
         ObjectOutputStream payWriter = new ObjectOutputStream(paySocket.getOutputStream());
         ObjectInputStream payReader = new ObjectInputStream(paySocket.getInputStream());
-        // send reqpay
+
+        // Send REQPAY
         payWriter.writeUTF("REQPAY");
         payWriter.flush();
         payWriter.writeObject(debitRequest);
@@ -127,12 +124,12 @@ public class ThreadStore extends Thread {
         // Get response from transaction
         String response = payReader.readUTF();
         if(response.equals("OK")){
-            System.out.println("---Server store : Payement effectué ! --");
+            System.out.println("::: ServerStore ::: -> : Payement effectué ! --");
             writer.writeUTF("OK");
             updateQuantitiesInDB(cltCatalog);
         }
         else {
-            System.out.println("---Server store : Payement échoué ! --");
+            System.out.println("::: ServerStore ::: -> : Payement échoué ! --");
             writer.writeUTF("CANCEL");
         }
         writer.flush();
@@ -165,7 +162,7 @@ public class ThreadStore extends Thread {
     private void closeConnexion() throws IOException {
         writer = null;
         reader = null;
-        System.out.println("*-> Client déconnecté, on ferme la socket..");
+        System.out.println("::: ServerStore ::: -> Client déconnecté, on ferme la socket..");
         socket.close();
     }
 

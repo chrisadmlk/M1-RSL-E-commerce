@@ -18,7 +18,7 @@ public class ThreadServer extends Thread {
     @Override
     public void run() {
         serverSocket = master.getSocket();
-        System.out.println("Serveur Thread starting\n");
+        System.out.println(master.getClass().getName() +" ||  Serveur Thread starting\n");
         // Thread Pool
         for (int i = 0; i < master.getThreadPoolSize(); i++) {
             master.createThread();
@@ -26,7 +26,7 @@ public class ThreadServer extends Thread {
         while (!isInterrupted()) {
             try {
                 Socket workSocket = serverSocket.accept();
-                System.out.println("*-> Connexion d'un client reçu\n*-> Passage à un thread\n");
+                System.out.println(master.getClass().getName() +"*-> Connexion d'un client reçu\n*-> Passage à un thread\n");
                 master.addToTask(workSocket);
             } catch (IOException e) {
                 e.printStackTrace();
