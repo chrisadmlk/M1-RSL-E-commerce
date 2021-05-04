@@ -156,7 +156,6 @@ public class ClientCH extends JFrame {
         clientSocket = null;
         try {
             clientSocket = new Socket(host, port);
-
             System.out.println("#-> Client se connecte : " + clientSocket.getInetAddress().toString());
 
             writer = new ObjectOutputStream(clientSocket.getOutputStream());
