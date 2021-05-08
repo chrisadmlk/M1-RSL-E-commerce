@@ -61,10 +61,10 @@ public class TestAuthentication {
                     writer.writeObject(request); writer.flush();
 
                     System.out.println("Request : " + request.toString());
+                    System.out.println("TEST : " + reader.readUTF());
 
                     AuthServerResponse response = (AuthServerResponse) reader.readObject();
-                    System.out.println("Auth réussie : " + response.toString());
-                    System.out.println("TEST : " + reader.readUTF());
+                    System.out.println("Auth réussie : -> OUI ");
 
                 } catch (IOException | ClassNotFoundException e ){
                     e.printStackTrace();

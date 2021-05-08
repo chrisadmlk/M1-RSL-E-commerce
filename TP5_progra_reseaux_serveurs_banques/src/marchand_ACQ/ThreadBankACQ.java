@@ -29,6 +29,8 @@ public class ThreadBankACQ extends Thread {
     private boolean running = true;
     private final int portACSMoney = 51001;
     private final String hostACS = "localhost";
+    private String FILE_KEYSTORE = "bruce";
+
 
     public ThreadBankACQ(LinkedList<Socket> taskQueue) {
         this.taskQueue = taskQueue;
@@ -73,6 +75,14 @@ public class ThreadBankACQ extends Thread {
                             writer.writeUTF("CANCEL");
                         }
                         writer.flush();
+                        System.out.println("## Bank ACQ ## -> " + currentThread().getName() + " - Fin de REQPAY");
+                    }
+                    if("END".equals(request)){
+                        System.out.println("## Bank ACQ ## -> " + currentThread().getName() + " - END !!");
+                        writer.close();
+                        reader.close();
+                        socket.close();
+                        break;
                     }
                 } catch (IOException
                         | ClassNotFoundException
@@ -96,7 +106,6 @@ public class ThreadBankACQ extends Thread {
         try {
             // Keystore
             KeyStore serverACQKeystore = KeyStore.getInstance("JKS");
-            String FILE_KEYSTORE = "serverAcq_keystore";
             char[] passwd = "pwdpwd".toCharArray();
             FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
             serverACQKeystore.load(serverInput, passwd);
@@ -139,10 +148,10 @@ public class ThreadBankACQ extends Thread {
 
     private void updateBalance(double debit) throws SQLException, IOException {
         String clientName = "CrazyNature";
-        ResultSet resultSet = beanOracle.executeQuery("SELECT solde FROM ACS.Clients WHERE nom_client = " + clientName);
+        ResultSet resultSet = beanOracle.executeQuery("SELECT * FROM ACQ.Clients WHERE nom_client = '" + clientName+"'");
         resultSet.next();
         double solde = resultSet.getDouble("solde") + debit;
-        beanOracle.executeQuery("UPDATE ACS.Clients SET solde = " + solde + "  WHERE nom_client = " + clientName);
+        beanOracle.executeQuery("UPDATE ACQ.Clients SET solde = " + solde + "  WHERE nom_client = '" + clientName+"'");
     }
 
     public boolean isRunning() {

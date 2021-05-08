@@ -6,6 +6,7 @@ import common.BeanAccessOracle;
 import common.Catalog;
 import common.ItemStore;
 import marchand_ACQ.obj.DebitRequest;
+import mysecurity.encryption.AsymmetricCryptTool;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,6 +29,8 @@ public class ThreadStore extends Thread {
     private final int portACQ = 51003;
     private final String hostACQ = "localhost";
 
+    private AsymmetricCryptTool acsCertificate;
+
     public ThreadStore(LinkedList<Socket> taskQueue) throws Exception {
         this.taskQueue = taskQueue;
         beanOracle = new BeanAccessOracle("MERCHANT");
@@ -36,7 +39,9 @@ public class ThreadStore extends Thread {
     @Override
     public void run() {
         System.out.println("::: ServerStore ::: -> Lancement du ThreadClient n° : " + Thread.currentThread().getName());
-        boolean logged = false;
+
+//        acsCertificate.loadFromKeystore("serverAcs_keystore","pwdpwd","acscert");
+
         while (isRunning()) {
             synchronized (taskQueue) {
                 if (!taskQueue.isEmpty()) {
@@ -108,6 +113,14 @@ public class ThreadStore extends Thread {
         Catalog cltCatalog = (Catalog) reader.readObject();
         double price = getPrice(cltCatalog);
         AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
+
+        // Vérif authentification
+//        byte[] toVerify = authentication.concatForSignature();
+//        if(!acsCertificate.verifyAuthentication(toVerify, authentication.getSignature())){
+//            writer.writeUTF("CANCEL");
+//            return;
+//        }
+//        System.out.println(":::ServerStore::: -> Auth correcte client validé");
         DebitRequest debitRequest = new DebitRequest(price, authentication);
 
         // Client with ACQ
@@ -133,6 +146,9 @@ public class ThreadStore extends Thread {
             writer.writeUTF("CANCEL");
         }
         writer.flush();
+        payWriter.writeUTF("END");
+        payWriter.flush();
+
         // Close
         paySocket.close();
         payWriter.close();
@@ -142,7 +158,7 @@ public class ThreadStore extends Thread {
     private void updateQuantitiesInDB(Catalog cltCatalog) throws SQLException {
         for (int i = 0; i < cltCatalog.getItems().size(); i++) {
             ItemStore tmp = cltCatalog.getItems().get(i);
-            ResultSet resultSet = beanOracle.executeQuery("SELECT quantity FROM MERCHANT.Stock WHERE item_name = " + tmp.getName());
+            ResultSet resultSet = beanOracle.executeQuery("SELECT quantity FROM MERCHANT.Stock WHERE item_name = '" + tmp.getName()+"'");
             resultSet.next();
             int quantity = resultSet.getInt("quantity") - tmp.getQuantity();
             beanOracle.executeQuery("UPDATE MERCHANT.Stock SET quantity = " + quantity);
