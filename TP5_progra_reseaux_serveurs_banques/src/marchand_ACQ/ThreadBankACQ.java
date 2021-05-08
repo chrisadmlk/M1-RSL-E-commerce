@@ -29,6 +29,8 @@ public class ThreadBankACQ extends Thread {
     private boolean running = true;
     private final int portACSMoney = 51001;
     private final String hostACS = "localhost";
+    private String FILE_KEYSTORE = "acq_keystore";
+
 
     public ThreadBankACQ(LinkedList<Socket> taskQueue) {
         this.taskQueue = taskQueue;
@@ -96,7 +98,6 @@ public class ThreadBankACQ extends Thread {
         try {
             // Keystore
             KeyStore serverACQKeystore = KeyStore.getInstance("JKS");
-            String FILE_KEYSTORE = "serverAcq_keystore";
             char[] passwd = "pwdpwd".toCharArray();
             FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
             serverACQKeystore.load(serverInput, passwd);

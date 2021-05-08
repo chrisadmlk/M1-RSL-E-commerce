@@ -27,12 +27,11 @@ public class TestSSL {
         try {
             // Keystore
             KeyStore serverACSKeyStore = KeyStore.getInstance("JKS");
-            String FILE_KEYSTORE = "F:\\Workspace\\school\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\serverAcq_keystore";
+            String FILE_KEYSTORE = "acq_keystore";
             char[] passwd = "pwdpwd".toCharArray();
             FileInputStream serverInput = new FileInputStream(FILE_KEYSTORE);
             serverACSKeyStore.load(serverInput, passwd);
             System.out.println("--------KS--------");
-
             // Context
             SSLContext sslContext = SSLContext.getInstance("SSLv3");
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
@@ -50,8 +49,10 @@ public class TestSSL {
             paySocket = (SSLSocket) sslSocketFactory.createSocket("localhost", 51001);
             System.out.println("--------SOCKET--------");
 
-            payWriter = new ObjectOutputStream(paySocket.getOutputStream());
-            payReader = new ObjectInputStream(paySocket.getInputStream());
+            // payWriter = new ObjectOutputStream(paySocket.getOutputStream());
+            // payReader = new ObjectInputStream(paySocket.getInputStream());
+
+
 
             // Send MONEY request
             payWriter.writeUTF("MONEY");

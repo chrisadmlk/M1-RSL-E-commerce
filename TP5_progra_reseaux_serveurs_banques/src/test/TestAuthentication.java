@@ -63,7 +63,6 @@ public class TestAuthentication {
                     System.out.println("Request : " + request.toString());
                     System.out.println("TEST : " + reader.readUTF());
 
-
                     AuthServerResponse response = (AuthServerResponse) reader.readObject();
                     System.out.println("Auth réussie : -> OUI ");
 

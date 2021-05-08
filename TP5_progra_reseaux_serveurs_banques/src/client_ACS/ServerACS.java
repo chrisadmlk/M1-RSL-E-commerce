@@ -18,7 +18,7 @@ public class ServerACS {
     private static final String PROPERTY_PORT_MONEY = "PORT_MONEY";
     private static final String PROPERTY_PORT_AUTH = "PORT_AUTH";
 
-    private static final String FILE_KEYSTORE = "F:\\Workspace\\school\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\serverAcs_keystore";
+    private static final String FILE_KEYSTORE = "F:\\Workspace\\school\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\acs_keystore";
 
 
     // Default values
@@ -69,7 +69,7 @@ public class ServerACS {
         System.out.println("%% ACS %% --- Démarrage ACS -> SockAuth" + serverAuthSocket + " \n%% ACS %% -> SockWork" + serverMoneySocket);
 
         AsymmetricCryptTool serverACSkeys = new AsymmetricCryptTool();
-        serverACSkeys.loadFromKeystore(FILE_KEYSTORE,"pwdpwd","acskeys");
+        serverACSkeys.loadFromKeystore(FILE_KEYSTORE,"pwdpwd","acsser");
 
         Thread thSocketHandlerMoney = new Thread(new Runnable() {
             @Override
