@@ -146,6 +146,9 @@ public class ThreadStore extends Thread {
             writer.writeUTF("CANCEL");
         }
         writer.flush();
+        payWriter.writeUTF("END");
+        payWriter.flush();
+
         // Close
         paySocket.close();
         payWriter.close();
@@ -155,7 +158,7 @@ public class ThreadStore extends Thread {
     private void updateQuantitiesInDB(Catalog cltCatalog) throws SQLException {
         for (int i = 0; i < cltCatalog.getItems().size(); i++) {
             ItemStore tmp = cltCatalog.getItems().get(i);
-            ResultSet resultSet = beanOracle.executeQuery("SELECT quantity FROM MERCHANT.Stock WHERE item_name = " + tmp.getName());
+            ResultSet resultSet = beanOracle.executeQuery("SELECT quantity FROM MERCHANT.Stock WHERE item_name = '" + tmp.getName()+"'");
             resultSet.next();
             int quantity = resultSet.getInt("quantity") - tmp.getQuantity();
             beanOracle.executeQuery("UPDATE MERCHANT.Stock SET quantity = " + quantity);

@@ -28,4 +28,12 @@ public class DebitRequest implements Serializable {
     public void setAuthServer(AuthServerResponse authServer) {
         this.authServer = authServer;
     }
+
+    @Override
+    public String toString() {
+        return "DebitRequest{" +
+                "debit=" + debit +
+                ", authServer=" + authServer +
+                '}';
+    }
 }

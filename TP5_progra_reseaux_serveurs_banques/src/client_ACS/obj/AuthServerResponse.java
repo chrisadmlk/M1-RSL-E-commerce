@@ -6,7 +6,7 @@ public class AuthServerResponse implements Serializable {
     private String bankName;
     private String clientName;
     private int serialNumber;
-    private byte[] signature;
+    private byte[] signature = null;
 
     public AuthServerResponse(String bankName, String clientName, int serialNumber, byte[] signature) {
         this.bankName = bankName;
@@ -66,7 +66,6 @@ public class AuthServerResponse implements Serializable {
                 "bankName='" + bankName + '\'' +
                 ", clientName='" + clientName + '\'' +
                 ", serialNumber=" + serialNumber +
-                ", signature=" + new String(signature) +
                 '}';
     }
 }
