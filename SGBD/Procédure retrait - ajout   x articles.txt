@@ -3,7 +3,7 @@ SET SERVEROUTPUT ON ;
 
 
 
-CREATE OR REPLACE PROCEDURE ChangeStock(quantity IN INTEGER, item_name IN VARCHAR2, response OUT VARCHAR2)
+CREATE OR REPLACE PROCEDURE MERCHANT.ChangeStock(quantity IN INTEGER, item_name IN VARCHAR2, response OUT VARCHAR2)
 IS
 	Requete VARCHAR2(500);
 	quantityInStock Integer;

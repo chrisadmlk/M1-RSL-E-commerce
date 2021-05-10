@@ -5,10 +5,19 @@ import client_ACS.ServerACS;
 import marchand_ACQ.ServerBankACQ;
 import marchand_ACQ.ServerStore;
 
+import java.security.Security;
+
 import javax.swing.*;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class MainTest {
     public static void main(String[] args) {
+    	
+    	Security.addProvider(new BouncyCastleProvider()); 			// la modification du fichier java.security ne fonctionnait pas chez moi...
+   	 
+    	
+    	
         Thread server = new Thread(new Runnable() {
             @Override
             public void run() {

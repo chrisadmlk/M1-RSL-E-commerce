@@ -48,6 +48,7 @@ public class ThreadACSAuth extends Thread {
                         // Receive client public key
                         clientKeys = new AsymmetricCryptTool();
                         clientKeys.setPublicKey((PublicKey) reader.readObject());
+                        System.out.println("Clé ici : " + clientKeys.getPublicKey());
                         break;
                     }
                     case "AUTH": {
@@ -108,7 +109,7 @@ public class ThreadACSAuth extends Thread {
                     }
                 }
             } catch (IOException | ClassNotFoundException | SQLException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }

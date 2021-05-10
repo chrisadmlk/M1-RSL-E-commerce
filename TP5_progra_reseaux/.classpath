@@ -19,5 +19,8 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="C:/Programmation/IDE - programmes/Eclipse/lib and external jars/crypto-168/jars/bcpg-jdk14-168.jar"/>
+	<classpathentry kind="lib" path="C:/Programmation/IDE - programmes/Eclipse/lib and external jars/crypto-168/jars/bcprov-ext-jdk14-168.jar"/>
+	<classpathentry kind="lib" path="C:/Programmation/IDE - programmes/Eclipse/lib and external jars/crypto-168/jars/bcprov-jdk14-168.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

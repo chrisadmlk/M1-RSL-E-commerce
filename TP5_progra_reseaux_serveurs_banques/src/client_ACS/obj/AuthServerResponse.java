@@ -1,5 +1,7 @@
 package client_ACS.obj;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
 public class AuthServerResponse implements Serializable {
@@ -59,6 +61,15 @@ public class AuthServerResponse implements Serializable {
         return tmp.getBytes();
     }
 
+    
+    public byte[] gatherInfos() throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(getBankName().getBytes());
+        output.write(getClientName().getBytes());
+        output.write(getSerialNumber());
+        return output.toByteArray();
+    }
+    
 
     @Override
     public String toString() {
