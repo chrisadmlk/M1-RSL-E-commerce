@@ -29,7 +29,7 @@ public class ThreadStore extends Thread {
     private final int portACQ = 51003;
     private final String hostACQ = "localhost";
 
-    private AsymmetricCryptTool acsCertificate;
+    private AsymmetricCryptTool acsCertificate = null;
 
     public ThreadStore(LinkedList<Socket> taskQueue) throws Exception {
         this.taskQueue = taskQueue;
@@ -40,7 +40,8 @@ public class ThreadStore extends Thread {
     public void run() {
         System.out.println("::: ServerStore ::: -> Lancement du ThreadClient n° : " + Thread.currentThread().getName());
 
-//        acsCertificate.loadFromKeystore("serverAcs_keystore","pwdpwd","acscert");
+        acsCertificate = new AsymmetricCryptTool();
+        acsCertificate.loadFromKeystore("bruce","pwdpwd","bruce");
 
         while (isRunning()) {
             synchronized (taskQueue) {
@@ -115,12 +116,12 @@ public class ThreadStore extends Thread {
         AuthServerResponse authentication = (AuthServerResponse) reader.readObject();
 
         // Vérif authentification
-//        byte[] toVerify = authentication.concatForSignature();
-//        if(!acsCertificate.verifyAuthentication(toVerify, authentication.getSignature())){
-//            writer.writeUTF("CANCEL");
-//            return;
-//        }
-//        System.out.println(":::ServerStore::: -> Auth correcte client validé");
+        byte[] toVerify = authentication.concatForSignature();
+        if(!acsCertificate.verifyAuthentication(toVerify, authentication.getSignature())){
+            writer.writeUTF("CANCEL");
+            return;
+        }
+        System.out.println(":::ServerStore::: -> Auth correcte client validé");
         DebitRequest debitRequest = new DebitRequest(price, authentication);
 
         // Client with ACQ
