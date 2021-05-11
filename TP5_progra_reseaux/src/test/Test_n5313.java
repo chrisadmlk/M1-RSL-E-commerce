@@ -15,6 +15,7 @@ import java.security.cert.X509Certificate;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import autres.ClasseAuth;
 import client_ACS.ServerACS;
 import client_ACS.obj.AuthClientRequest;
 import client_ACS.obj.AuthServerResponse;
@@ -46,40 +47,12 @@ public class Test_n5313 {
         
         String name="Bruce Wayne";
         String pin="2222";
-        
+        ClasseAuth test;
    	 
         Socket clientSocket = null;
-        AuthServerResponse responseAuth = null;
+        AuthServerResponse responseAuth;
         try {
-            clientSocket = new Socket("localhost", 51002);
-
-            System.out.println("#-> Client se connecte : " + clientSocket.getInetAddress().toString());
-
-            ObjectOutputStream writer = new ObjectOutputStream(clientSocket.getOutputStream());
-            ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
-
-            // Secure
-            writer.writeUTF("SECURE"); writer.flush();
-            AsymmetricCryptTool myKeys = new AsymmetricCryptTool();
-            myKeys.createKeyPair();
-            AsymmetricCryptTool serverKey = new AsymmetricCryptTool();
-            serverKey.setPublicKey((PublicKey) reader.readObject());
-            writer.writeObject(myKeys.getPublicKey());
-
-            System.out.println("Keys : " + serverKey.getPublicKey() + " - " + myKeys.getPublicKey());
-
-            // Authentication
-            writer.writeUTF("AUTH"); writer.flush();
-            AuthClientRequest request = new AuthClientRequest(name, pin);
-            request.setSignature(myKeys.authenticate(request.gatherInfos()));
-            writer.writeObject(request); writer.flush();
-
-            System.out.println("Request : " + request.toString());
-            System.out.println("TEST : " + reader.readUTF());
-
-            responseAuth = (AuthServerResponse) reader.readObject();
-            
-            
+        	responseAuth = ClasseAuth.authenticateProcess("Bruce Wayne","2222");
 			 // chargement du certificat signé par la banque du client
 			 PublicKey cléPubliqueBanqueClient  = null;
 			 X509Certificate certifBanqueClient = null;
@@ -93,7 +66,7 @@ public class Test_n5313 {
 			 
             // Verify signature
 			 AsymmetricCryptTool clientKeys = new AsymmetricCryptTool();
-			 clientKeys.setPublicKey(cléPubliqueBanqueClient); 	// TODO  : mettre clé publique du server ACS auth
+			 clientKeys.setPublicKey(cléPubliqueBanqueClient); 
             String concat =  responseAuth.getBankName() + responseAuth.getClientName() + responseAuth.getSerialNumber();
             if (!clientKeys.verifyAuthentication(concat.getBytes(), responseAuth.getSignature())) {
                 System.out.println("Signature incorrecte");

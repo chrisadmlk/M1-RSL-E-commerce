@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import autres.BeanAccessOracle;
+import autres.ClasseAuth;
 import client_ACS.obj.AuthClientRequest;
 import client_ACS.obj.AuthServerResponse;
 import marchand_ACQ.ServerStore;
@@ -49,15 +50,13 @@ import mysecurity.encryption.AsymmetricCryptTool;
  */
 @WebServlet("/MainServlet")
 public class MainServlet extends HttpServlet {
+	
 	private static final long serialVersionUID = 1L;
 	 BeanAccessOracle beanOracle;
-	 ServerStore serverStore;
+	 ClasseAuth classAuth;
 	 @Override
 	 public void init (ServletConfig c) throws ServletException 
 	 { 
-	        serverStore = new ServerStore();
-	        serverStore.startServer();
-
 		 super.init(c);
 		 try {
 			 // beanOracle = new BeanAccessOracle(getInitParameter("UserSGBD"));   TODO : problèmes à la lecture des initparam
@@ -214,49 +213,51 @@ public class MainServlet extends HttpServlet {
 				 // lancement du processus de payement
 				 else if (action.equals("Payer")) {
 					 
-					 // TODO : auth du client, verif de la réponse aini que de la signature de la réponse de sa banque
-					 String pin = request.getParameter("pin");
-					 AuthServerResponse authResponse = null;
-					 boolean testAuth = true;
-					 authResponse = authClient(nomClient, pin);
-					 
-					 if( !(authResponse.getClientName().equals(nomClient))) {
-						 testAuth = false;
-					 }
-					 
-					 
-					 // chargement du certificat signé par la banque du client
-					 PublicKey cléPubliqueBanqueClient  = null;
-					 X509Certificate certifBanqueClient = null;
-					 KeyStore ksv;
-					try {
-						ksv = KeyStore.getInstance("JKS");
-						ksv.load(new FileInputStream("C:\\Programmation\\IDE - programmes\\Eclipse\\Projets\\Progra_reseau_TP5_All\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\bruce"), "pwdpwd".toCharArray()); 
-						certifBanqueClient = (X509Certificate)ksv.getCertificate("bruce");
-					} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e1) {
-						e1.printStackTrace();
-					}
-			    	 cléPubliqueBanqueClient = certifBanqueClient.getPublicKey();
-					 
-                     // Verify signature
-					 AsymmetricCryptTool clientKeys = new AsymmetricCryptTool();
-					 clientKeys.setPublicKey(cléPubliqueBanqueClient); 	// TODO  : mettre clé publique du server ACS auth
-                     String concat =  authResponse.getBankName() + authResponse.getClientName() + authResponse.getSerialNumber();
-                     if (!clientKeys.verifyAuthentication(concat.getBytes(), authResponse.getSignature())) {
-                         System.out.println("Signature incorrecte");
-                         testAuth = false;
-                     }
-					 
-	
-      	 			
-      	 			
-      	 			
-
-					
-					if (!testAuth) {
-						redemandeduPin = true;
-					}
-					else {
+//					 // TODO : auth du client, verif de la réponse aini que de la signature de la réponse de sa banque
+//					 String pin = request.getParameter("pin");
+//					 AuthServerResponse authResponse = null;
+//					 boolean testAuth = true;
+////					 authResponse = authClient(nomClient, pin);
+//					 try {
+//						authResponse = classAuth.authenticateProcess(nomClient, pin);
+//					} catch (ClassNotFoundException | IOException e2) {  e2.printStackTrace(); 	}
+//					 if( !(authResponse.getClientName().equals(nomClient))) {
+//						 testAuth = false;
+//					 }
+//					 
+//					 
+//					 // chargement du certificat signé par la banque du client
+//					 PublicKey cléPubliqueBanqueClient  = null;
+//					 X509Certificate certifBanqueClient = null;
+//					 KeyStore ksv;
+//					try {
+//						ksv = KeyStore.getInstance("JKS");
+//						ksv.load(new FileInputStream("C:\\Programmation\\IDE - programmes\\Eclipse\\Projets\\Progra_reseau_TP5_All\\M1-RSL-E-commerce\\TP5_progra_reseaux_serveurs_banques\\bruce"), "pwdpwd".toCharArray()); 
+//						certifBanqueClient = (X509Certificate)ksv.getCertificate("bruce");
+//					} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e1) {
+//						e1.printStackTrace();
+//					}
+//			    	 cléPubliqueBanqueClient = certifBanqueClient.getPublicKey();
+//					 
+//                     // Verify signature
+//					 AsymmetricCryptTool clientKeys = new AsymmetricCryptTool();
+//					 clientKeys.setPublicKey(cléPubliqueBanqueClient); 	// TODO  : mettre clé publique du server ACS auth
+//                     String concat =  authResponse.getBankName() + authResponse.getClientName() + authResponse.getSerialNumber();
+//                     if (!clientKeys.verifyAuthentication(concat.getBytes(), authResponse.getSignature())) {
+//                         System.out.println("Signature incorrecte");
+//                         testAuth = false;
+//                     }
+//					 
+//	
+//      	 			
+//      	 			
+//      	 			
+//
+//					
+//					if (!testAuth) {
+//						redemandeduPin = true;
+//					}
+//					else {
 						// calcul du montant
 						double montant=0;
 						String[] lignesPanier = contenuPanier.split("/");		 
@@ -274,8 +275,10 @@ public class MainServlet extends HttpServlet {
 						}	
 						
 						
-						boolean testPayement = tryPayement(nomClient, montant);
+//						boolean testPayement = tryPayement(nomClient, montant);
 						
+					 
+					 boolean testPayement = true;
 						if (testPayement) {
 							// message de réusssite et ajout dans infos dans la table commands
 							lignesPanier = contenuPanier.split("/");		 
@@ -315,7 +318,7 @@ public class MainServlet extends HttpServlet {
 						}
 					}
 					
-				 } 
+//				 } 
 				 
 				 
 				 
@@ -419,49 +422,49 @@ public class MainServlet extends HttpServlet {
 	 
 	 
 	 
-	 protected AuthServerResponse authClient(String name, String pin)  {
-		 
-         Socket clientSocket = null;
-         AuthServerResponse responseAuth = null;
-         try {
-             clientSocket = new Socket("localhost", 51002);
-
-             System.out.println("#-> Client se connecte : " + clientSocket.getInetAddress().toString());
-
-             ObjectOutputStream writer = new ObjectOutputStream(clientSocket.getOutputStream());
-             ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
-
-             // Secure
-             writer.writeUTF("SECURE"); writer.flush();
-             AsymmetricCryptTool myKeys = new AsymmetricCryptTool();
-             myKeys.createKeyPair();
-             AsymmetricCryptTool serverKey = new AsymmetricCryptTool();
-             serverKey.setPublicKey((PublicKey) reader.readObject());
-             if (myKeys.getPublicKey() == null)  {
-            	 System.out.println("teuteuteu");
-            	 return responseAuth;
-             }
-             
-             writer.writeObject(myKeys.getPublicKey());
-
-             System.out.println("Keys : " + serverKey.getPublicKey() + " - " + myKeys.getPublicKey());
-
-             // Authentication
-             writer.writeUTF("AUTH"); writer.flush();
-             AuthClientRequest request = new AuthClientRequest(name, pin);
-             request.setSignature(myKeys.authenticate(request.gatherInfos()));
-             writer.writeObject(request); writer.flush();
-
-             System.out.println("Request : " + request.toString());
-             System.out.println("TEST : " + reader.readUTF());
-
-             responseAuth = (AuthServerResponse) reader.readObject();
-
-         } catch (IOException | ClassNotFoundException e ){
-             e.printStackTrace();
-         }
-         return responseAuth;
-	 }
+//	 protected AuthServerResponse authClient(String name, String pin)  {
+//		 
+//         Socket clientSocket = null;
+//         AuthServerResponse responseAuth = null;
+//         try {
+//             clientSocket = new Socket("localhost", 51002);
+//
+//             System.out.println("#-> Client se connecte : " + clientSocket.getInetAddress().toString());
+//
+//             ObjectOutputStream writer = new ObjectOutputStream(clientSocket.getOutputStream());
+//             ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+//
+//             // Secure
+//             writer.writeUTF("SECURE"); writer.flush();
+//             AsymmetricCryptTool myKeys = new AsymmetricCryptTool();
+//             myKeys.createKeyPair();
+//             AsymmetricCryptTool serverKey = new AsymmetricCryptTool();
+//             serverKey.setPublicKey((PublicKey) reader.readObject());
+//             if (myKeys.getPublicKey() == null)  {
+//            	 System.out.println("teuteuteu");
+//            	 return responseAuth;
+//             }
+//             
+//             writer.writeObject(myKeys.getPublicKey());
+//
+//             System.out.println("Keys : " + serverKey.getPublicKey() + " - " + myKeys.getPublicKey());
+//
+//             // Authentication
+//             writer.writeUTF("AUTH"); writer.flush();
+//             AuthClientRequest request = new AuthClientRequest(name, pin);
+//             request.setSignature(myKeys.authenticate(request.gatherInfos()));
+//             writer.writeObject(request); writer.flush();
+//
+//             System.out.println("Request : " + request.toString());
+//             System.out.println("TEST : " + reader.readUTF());
+//
+//             responseAuth = (AuthServerResponse) reader.readObject();
+//
+//         } catch (IOException | ClassNotFoundException e ){
+//             e.printStackTrace();
+//         }
+//         return responseAuth;
+//	 }
 	 
 	 
 	 
