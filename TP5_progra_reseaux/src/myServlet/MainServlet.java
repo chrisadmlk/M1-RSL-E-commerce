@@ -268,6 +268,7 @@ public class MainServlet extends HttpServlet {
 									int nb = Integer.parseInt(elementsLigne[1]);
 									query = "SELECT price FROM MERCHANT.STOCK WHERE item_name='"+ elementsLigne[0] +"'";  
 									result = beanOracle.executeQuery(query);
+									result.next();
 									double price = result.getDouble(1);
 									montant = montant + price * nb;
 								} catch (SQLException e) {e.printStackTrace();}
@@ -286,7 +287,7 @@ public class MainServlet extends HttpServlet {
 								String[] elementsLigne = lignesPanier[j].split(";");
 								if (elementsLigne.length == 2) {	
 									try {
-										query = "INSERT INTO COMMANDS (client_name, item_name, quantity) values('"+nomClient+"', '"+elementsLigne[0]+"', "+elementsLigne[1];  
+										query = "INSERT INTO MERCHANT.COMMANDS (client_name, item_name, quantity) values('"+nomClient+"', '"+elementsLigne[0]+"', "+elementsLigne[1]+")";  
 										beanOracle.executeUpdate(query);
 									} catch (SQLException e) {e.printStackTrace();}
 								}
